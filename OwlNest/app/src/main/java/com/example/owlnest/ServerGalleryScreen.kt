@@ -92,7 +92,7 @@ fun ServerGalleryScreen(navController: NavController) {
             if (uris.isNotEmpty()) {
                 isUploading = true
                 lifecycleScope.launch {
-                    PhotoService.uploadImages(context, uris)
+                    uploadImages(context, uris)
                     photos.clear()
                     photos.addAll(PhotoService.fetchPhotos())
                     isUploading = false
@@ -408,4 +408,40 @@ private fun saveImageToGallery(context: Context, bytes: ByteArray, fileName: Str
         arrayOf("image/jpeg"),
         null
     )
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+private suspend fun uploadImages(context: Context, uris: List<Uri>) {
+    val client = OkHttpClient()
+
+    uris.forEach { uri ->
+        try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val bytes = withContext(Dispatchers.IO) {
+                    inputStream.readBytes()
+                }
+
+                val requestBody = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart(
+                        "file",
+                        "photo_${System.currentTimeMillis()}.jpg",
+                        bytes.toRequestBody("image/jpeg".toMediaType())
+                    )
+                    .build()
+
+                val request = Request.Builder()
+                    .url("${PhotoService.activeServer?.address}/api/photo/upload")
+                    .post(requestBody)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                if (!response.isSuccessful) {
+                    throw IOException("Ошибка загрузки: ${response.code}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("ServerGalleryScreen", "Error uploading image", e)
+        }
+    }
 }

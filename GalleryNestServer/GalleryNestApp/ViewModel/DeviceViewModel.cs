@@ -1,14 +1,15 @@
 ﻿using GalleryNestApp.Service;
+using GalleryNestApp.ViewModel.Core;
 
 namespace GalleryNestApp.ViewModel
 {
-    public class DeviceViewModel
+    public class DeviceViewModel : ObservableObject
     {
-        private DeviceService deviceService;
-
+        public DeviceService deviceService;
         public DeviceViewModel(DeviceService deviceService)
         {
             this.deviceService = deviceService;
         }
+
     }
 }

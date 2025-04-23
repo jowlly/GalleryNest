@@ -2,24 +2,17 @@ package com.example.owlnest
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
 import android.provider.MediaStore
-import androidx.media3.common.util.Log
-import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
@@ -27,38 +20,13 @@ object PhotoService {
     var isInitialized: Boolean = false
     var servers: List<Server> = emptyList() // Список серверов
     var activeServer: Server? = null // Активный сервер
-    var syncedIdPhotos: List<Int> = emptyList()
 
     private lateinit var context: Context
 
     suspend fun initialize(context: Context) {
         this.context = context
         loadServers()
-        loadSynced()
         isInitialized = true
-    }
-
-    private suspend fun loadSynced() {
-        val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val syncedJson = prefs.getString("synced", null)
-        syncedIdPhotos = if (syncedJson != null) {
-            val jsonArray = JSONArray(syncedJson)
-            List(jsonArray.length()) { index ->
-                jsonArray.getInt(index)
-            }
-        } else {
-            emptyList()
-        }
-    }
-
-    private fun saveSynced() {
-        val jsonArray = JSONArray().apply {
-            syncedIdPhotos.forEach { put(it) }
-        }
-        context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            .edit()
-            .putString("synced", jsonArray.toString())
-            .apply()
     }
 
     private suspend fun loadServers() {
@@ -163,42 +131,6 @@ object PhotoService {
                     albumId = jsonObject.getInt("albumId"),
                     path = jsonObject.getString("path")
                 )
-            }
-        }
-    }
-
-    @androidx.annotation.OptIn(UnstableApi::class)
-    public suspend fun uploadImages(context: Context, uris: List<Uri>) {
-        val client = OkHttpClient()
-
-        uris.forEach { uri ->
-            try {
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val bytes = withContext(Dispatchers.IO) {
-                        inputStream.readBytes()
-                    }
-
-                    val requestBody = MultipartBody.Builder()
-                        .setType(MultipartBody.FORM)
-                        .addFormDataPart(
-                            "file",
-                            "photo_${System.currentTimeMillis()}.jpg",
-                            bytes.toRequestBody("image/jpeg".toMediaType())
-                        )
-                        .build()
-
-                    val request = Request.Builder()
-                        .url("${PhotoService.activeServer?.address}/api/photo/upload")
-                        .post(requestBody)
-                        .build()
-
-                    val response = client.newCall(request).execute()
-                    if (!response.isSuccessful) {
-                        throw IOException("Ошибка загрузки: ${response.code}")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("ServerGalleryScreen", "Error uploading image", e)
             }
         }
     }

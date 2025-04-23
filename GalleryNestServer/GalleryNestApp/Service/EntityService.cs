@@ -10,8 +10,8 @@ namespace GalleryNestApp.Service
 {
     public class EntityService<T>(HttpClient client,string url)
     {
-        private readonly string _url = url;
-        private readonly HttpClient _httpClient = client;
+        protected readonly string _url = url;
+        protected readonly HttpClient _httpClient = client;
 
         public async Task AddAsync(T album)
         {
