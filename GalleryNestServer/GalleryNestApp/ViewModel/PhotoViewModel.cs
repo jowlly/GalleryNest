@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Services.Maps;
 
 namespace GalleryNestApp.ViewModel
 {
@@ -16,12 +17,17 @@ namespace GalleryNestApp.ViewModel
     {
         #region Fields
         private PhotoService _photoService;
+
         private ObservableCollection<Photo> _photos = [];
         private ObservableCollection<int> _photoIds = [];
-        private Photo? _selectedPhoto = null;
+        private Photo? _selectedPhoto = null; private const int PageSize = 12;
+        private int _currentPage = 0;
+        private bool _isLoading;
+
         #endregion
 
         #region Properties
+        public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
         public ObservableCollection<Photo> Photos
         {
             get => _photos;
@@ -50,27 +56,43 @@ namespace GalleryNestApp.ViewModel
                 OnPropertyChanged(nameof(SelectedPhoto));
             }
         }
+
+        public bool IsLoading { get => _isLoading; }
+        public int CurrentPage { get => _currentPage;}
         #endregion
 
         public PhotoViewModel(PhotoService photoService)
         {
-            _photoService = photoService;
-            Photos = [.. Task.Run(() => _photoService.GetAllAsync()).Result];
-            PhotoIds = [.. Photos.Select(x => x.Id)];
+            PhotoService = photoService;
+            Photos = [.. Task.Run(() => PhotoService.GetAllAsync()).Result];
+            Task.Run(LoadCurrentPage).Wait();
         }
 
         #region Commands
+        private RelayCommand? loadPhotoCommand = null;
+        public RelayCommand LoadPhotoCommand => loadPhotoCommand ??= new RelayCommand(obj =>
+        {
+            Task.Run(async () =>
+            {
+                Photos = [.. (await PhotoService.GetAllAsync())];
+                await LoadCurrentPage();
+            }).Wait();
+
+        }
+        );
+
         private RelayCommand? addPhotoCommand = null;
         public RelayCommand AddPhotoCommand => addPhotoCommand ??= new RelayCommand(obj =>
         {
             Task.Run(async () =>
             {
-                await _photoService.AddAsync(new Photo()
+                await PhotoService.AddAsync(new Photo()
                 {
                     Id = 0,
                 });
 
-                PhotoIds = [.. (await _photoService.GetAllAsync()).Select(x => x.Id)];
+                Photos = [.. (await PhotoService.GetAllAsync())];
+                await LoadCurrentPage();
             }).Wait();
 
         }
@@ -81,40 +103,99 @@ namespace GalleryNestApp.ViewModel
         {
             Task.Run(async () =>
             {
-                await _photoService.EditAsync(
+                await PhotoService.EditAsync(
                         new Photo()
                         {
                             Id = 0,
                         });
 
-                PhotoIds = [.. (await _photoService.GetAllAsync()).Select(x => x.Id)];
+                Photos = [.. (await PhotoService.GetAllAsync())];
+                await LoadCurrentPage();
             }).Wait();
         }
         );
 
         private RelayCommand? deletePhotoCommand = null;
-        public RelayCommand DeletePhotoCommand => deletePhotoCommand ??= new RelayCommand(obj =>
+        public RelayCommand DeletePhotoCommand => deletePhotoCommand ??= new RelayCommand(async obj =>
         {
-            Task.Run(async () =>
+            if (obj is int photoId)
             {
-                await _photoService.DeleteAsync(
-                    [SelectedPhoto.Id]);
+                await PhotoService.DeleteAsync((new[] { photoId }).ToList());
 
-                PhotoIds = [.. (await _photoService.GetAllAsync()).Select(x => x.Id)];
-            }).Wait();
-        }
-        );
+                Photos = [.. (await PhotoService.GetAllAsync())];
+                await LoadCurrentPage();
+            }
+        });
+
+
+
         #endregion
 
-        public void LoadImageToWebView(WebView2 webView, string photoId)
+        public async Task LoadNextPage()
         {
-            _photoService.LoadImageToWebView(webView, photoId);
+            if (IsLoading) return;
+
+            _isLoading = true;
+            try
+            {
+                _currentPage++;
+                await Task.Run(() =>
+                {
+                    PhotoIds = [.. Photos.Select(x => x.Id).Skip(CurrentPage * PageSize).Take(PageSize).ToList()];
+                });
+                
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+        public async Task LoadCurrentPage()
+        {
+            if (IsLoading) return;
+
+            _isLoading = true;
+            try
+            {
+                await Task.Run(() =>
+                {
+                    PhotoIds = [.. Photos.Select(x => x.Id).Skip(CurrentPage * PageSize).Take(PageSize).ToList()];
+                });
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+        public async Task LoadPrevPage()
+        {
+            if (IsLoading) return;
+
+            _isLoading = true;
+            try
+            {
+                _currentPage--;
+                await Task.Run(() =>
+                {
+                    PhotoIds = [.. Photos.Select(x => x.Id).Skip(CurrentPage * PageSize).Take(PageSize).ToList()];
+                }); 
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+
+
+        public void LoadImageToWebView(WebView2CompositionControl webView, string photoId)
+        {
+            PhotoService.LoadImageToWebView(webView, photoId);
         }
 
         public async Task UploadFile(List<string> fileNames)
         {
-            fileNames.ForEach(async x=>await _photoService.UploadFile(x));
-            PhotoIds = [.. (await _photoService.GetAllAsync()).Select(x => x.Id)];
+            fileNames.ForEach(async x=>await PhotoService.UploadFile(x));
+            PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
         }
     }
 }

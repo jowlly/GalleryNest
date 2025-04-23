@@ -9,7 +9,7 @@ namespace GalleryNestApp.Service
 {
     public class PhotoService(HttpClient client, string url) : EntityService<Photo>(client, $"{url}/photo/meta")
     {
-        public void LoadImageToWebView(WebView2 webView, string photoId)
+        public void LoadImageToWebView(WebView2CompositionControl webView, string photoId)
         {
             try
             {

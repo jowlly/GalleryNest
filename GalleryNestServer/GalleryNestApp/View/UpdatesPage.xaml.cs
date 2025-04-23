@@ -33,7 +33,7 @@ namespace GalleryNestApp.View
 
         private async void WebView_Loaded(object sender, RoutedEventArgs e)
         {
-            var webView = sender as WebView2;
+            var webView = sender as WebView2CompositionControl;
             if (webView == null) return;
 
             var photoId = Convert.ToString(webView.DataContext);

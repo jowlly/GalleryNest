@@ -12,7 +12,7 @@ namespace GalleryNestApp.ViewModel
             this._photoService = photoService;
         }
 
-        public void LoadImageToWebView(WebView2 webView, string photoId)
+        public void LoadImageToWebView(WebView2CompositionControl webView, string photoId)
         {
             _photoService.LoadImageToWebView(webView, photoId);
         }

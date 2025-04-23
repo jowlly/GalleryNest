@@ -1,6 +1,7 @@
 ﻿using GalleryNestServer.Data;
 using GalleryNestServer.Entities;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Packaging.Signing;
 
 namespace GalleryNestServer.Controllers
 {
@@ -26,13 +27,15 @@ namespace GalleryNestServer.Controllers
         [HttpPost]
         public IActionResult Set([FromBody] IEnumerable<Album> entities)
         {
+            if (entities.Count() < 0) return BadRequest();
             _repository.Set(entities);
             return NoContent();
         }
 
         [HttpDelete]
-        public IActionResult Delete(IEnumerable<int> ids)
+        public IActionResult Delete([FromQuery] IEnumerable<int> ids)
         {
+            if (ids.Count() < 0) return BadRequest();
             _repository.Delete(ids);
             return NoContent();
         }

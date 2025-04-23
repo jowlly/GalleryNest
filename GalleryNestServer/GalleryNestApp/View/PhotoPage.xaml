@@ -13,7 +13,7 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
     <Grid>
-        <ScrollViewer>
+        <ScrollViewer x:Name="MainScrollViewer" ScrollChanged="MainScrollViewer_ScrollChanged">
             <ItemsControl x:Name="PhotosItemsControl" ItemsSource="{Binding PhotoIds}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -23,13 +23,14 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid x:Name="WebViewContainer">
-                            <wv2:WebView2
+                            <wv2:WebView2CompositionControl
                                 x:Name="PhotoWebView"
                                 Width="250"
                                 Height="250"
                                 Margin="5"
                                 DefaultBackgroundColor="Transparent"
                                 Loaded="WebView_Loaded" />
+
                             <ui:Button
                                 Width="40"
                                 Height="40"
@@ -37,7 +38,8 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
                                 Panel.ZIndex="1"
-                                Click="Upload_Click"
+                                Command="{Binding DataContext.DeletePhotoCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                CommandParameter="{Binding}"
                                 Icon="{ui:SymbolIcon Symbol=Delete48}" />
 
                         </Grid>
@@ -45,13 +47,21 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        <ui:Button
-            Width="40"
-            Height="40"
+        <StackPanel
             Margin="20"
             HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Click="Upload_Click"
-            Icon="{ui:SymbolIcon Symbol=Add48}" />
+            VerticalAlignment="Bottom">
+            <ui:Button
+                Width="40"
+                Height="40"
+                Click="Upload_Click"
+                Icon="{ui:SymbolIcon Symbol=Add48}" />
+            <Rectangle Height="10" />
+            <ui:Button
+                Width="40"
+                Height="40"
+                Command="{Binding LoadPhotoCommand}"
+                Icon="{ui:SymbolIcon Symbol=ArrowClockwise32}" />
+        </StackPanel>
     </Grid>
 </Page>

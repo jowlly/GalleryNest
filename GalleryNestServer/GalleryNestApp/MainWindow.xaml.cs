@@ -36,8 +36,9 @@ namespace GalleryNestApp
         InitializeComponent();
         }
 
-        private void PhotoButton_Click(object sender, RoutedEventArgs e)
+        private async void PhotoButton_Click(object sender, RoutedEventArgs e)
         {
+            photoViewModel!.PhotoIds=[..(await photoViewModel.PhotoService.GetAllAsync()).Select(x=>x.Id)];
             Main.Content = new PhotoPage(photoViewModel!);
         }
 

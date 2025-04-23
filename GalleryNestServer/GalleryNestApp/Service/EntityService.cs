@@ -27,12 +27,22 @@ namespace GalleryNestApp.Service
 
         public async Task DeleteAsync(List<int> ids)
         {
+            var uriBuilder = new UriBuilder($"{_url}");
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+
+            foreach (var id in ids)
+            {
+                query.Add("ids", id.ToString());
+            }
+
+            uriBuilder.Query = query.ToString();
+
             HttpRequestMessage request = new HttpRequestMessage
             {
-                Content = new StringContent(JsonConvert.SerializeObject(ids), Encoding.UTF8, "application/json"),
                 Method = HttpMethod.Delete,
-                RequestUri = new Uri($"{_url}", UriKind.Relative)
+                RequestUri = uriBuilder.Uri
             };
+
             await _httpClient.SendAsync(request);
         }
 
