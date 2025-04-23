@@ -26,39 +26,7 @@ namespace GalleryNestApp
         {
             await CoreWebView2Environment.CreateAsync();
         }
-        private async void MainScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer == null || photoViewModel.IsLoading) return;
-
-            const double scrollThreshold = 100; 
-            var currentOffset = scrollViewer.VerticalOffset;
-
-            bool isScrollingDown = e.VerticalChange > 0;
-            bool isScrollingUp = e.VerticalChange < 0;
-
-            if (isScrollingDown &&
-                currentOffset >= scrollViewer.ScrollableHeight - scrollThreshold &&
-                scrollViewer.ScrollableHeight > 0)
-            {
-                await photoViewModel.LoadNextPage();
-                //scrollViewer.ScrollToVerticalOffset(0);
-            }
-
-            else if (isScrollingUp &&
-                     currentOffset <= scrollThreshold &&
-                     photoViewModel.CurrentPage > 0)
-            {
-                await photoViewModel.LoadPrevPage();
-                //scrollViewer.ScrollToVerticalOffset(scrollViewer.ScrollableHeight - scrollThreshold);
-            }
-
-            else if (Math.Abs(e.ViewportHeightChange) > 0.1)
-            {
-                await photoViewModel.LoadCurrentPage();
-            }
-        }
-
+        
         private async void WebView_Loaded(object sender, RoutedEventArgs e)
         {
             var webView = sender as WebView2CompositionControl;

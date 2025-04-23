@@ -20,10 +20,7 @@ namespace GalleryNestApp.ViewModel
 
         private ObservableCollection<Photo> _photos = [];
         private ObservableCollection<int> _photoIds = [];
-        private Photo? _selectedPhoto = null; private const int PageSize = 12;
-        private int _currentPage = 0;
-        private bool _isLoading;
-
+        private Photo? _selectedPhoto = null;
         #endregion
 
         #region Properties
@@ -56,16 +53,20 @@ namespace GalleryNestApp.ViewModel
                 OnPropertyChanged(nameof(SelectedPhoto));
             }
         }
-
-        public bool IsLoading { get => _isLoading; }
-        public int CurrentPage { get => _currentPage;}
+        private RelayCommand? loadDataCommand;
         #endregion
 
         public PhotoViewModel(PhotoService photoService)
         {
             PhotoService = photoService;
-            Photos = [.. Task.Run(() => PhotoService.GetAllAsync()).Result];
-            Task.Run(LoadCurrentPage).Wait();
+            loadDataCommand = new RelayCommand(async _ => await LoadDataAsync());
+            loadDataCommand.Execute(null);
+        }
+
+        private async Task LoadDataAsync()
+        {
+            var photos = await PhotoService.GetAllAsync();
+            PhotoIds = [.. photos.Select(x => x.Id)];
         }
 
         #region Commands
@@ -74,9 +75,9 @@ namespace GalleryNestApp.ViewModel
         {
             Task.Run(async () =>
             {
-                Photos = [.. (await PhotoService.GetAllAsync())];
-                await LoadCurrentPage();
+                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x=>x.Id)];
             }).Wait();
+            
 
         }
         );
@@ -91,8 +92,7 @@ namespace GalleryNestApp.ViewModel
                     Id = 0,
                 });
 
-                Photos = [.. (await PhotoService.GetAllAsync())];
-                await LoadCurrentPage();
+                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
             }).Wait();
 
         }
@@ -109,8 +109,7 @@ namespace GalleryNestApp.ViewModel
                             Id = 0,
                         });
 
-                Photos = [.. (await PhotoService.GetAllAsync())];
-                await LoadCurrentPage();
+                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
             }).Wait();
         }
         );
@@ -122,69 +121,12 @@ namespace GalleryNestApp.ViewModel
             {
                 await PhotoService.DeleteAsync((new[] { photoId }).ToList());
 
-                Photos = [.. (await PhotoService.GetAllAsync())];
-                await LoadCurrentPage();
+                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
             }
         });
 
-
-
         #endregion
 
-        public async Task LoadNextPage()
-        {
-            if (IsLoading) return;
-
-            _isLoading = true;
-            try
-            {
-                _currentPage++;
-                await Task.Run(() =>
-                {
-                    PhotoIds = [.. Photos.Select(x => x.Id).Skip(CurrentPage * PageSize).Take(PageSize).ToList()];
-                });
-                
-            }
-            finally
-            {
-                _isLoading = false;
-            }
-        }
-        public async Task LoadCurrentPage()
-        {
-            if (IsLoading) return;
-
-            _isLoading = true;
-            try
-            {
-                await Task.Run(() =>
-                {
-                    PhotoIds = [.. Photos.Select(x => x.Id).Skip(CurrentPage * PageSize).Take(PageSize).ToList()];
-                });
-            }
-            finally
-            {
-                _isLoading = false;
-            }
-        }
-        public async Task LoadPrevPage()
-        {
-            if (IsLoading) return;
-
-            _isLoading = true;
-            try
-            {
-                _currentPage--;
-                await Task.Run(() =>
-                {
-                    PhotoIds = [.. Photos.Select(x => x.Id).Skip(CurrentPage * PageSize).Take(PageSize).ToList()];
-                }); 
-            }
-            finally
-            {
-                _isLoading = false;
-            }
-        }
 
 
         public void LoadImageToWebView(WebView2CompositionControl webView, string photoId)
@@ -194,7 +136,12 @@ namespace GalleryNestApp.ViewModel
 
         public async Task UploadFile(List<string> fileNames)
         {
-            fileNames.ForEach(async x=>await PhotoService.UploadFile(x));
+            foreach (var fileName in fileNames)
+            {
+                await PhotoService.UploadFile(fileName);
+            }
+            var updatedPhotos = await PhotoService.GetAllAsync();
+
             PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
         }
     }

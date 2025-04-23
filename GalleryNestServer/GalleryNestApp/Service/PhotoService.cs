@@ -14,12 +14,35 @@ namespace GalleryNestApp.Service
             try
             {
                 var html = $@"
-                    <html>
-                        <body style='margin:0; overflow:hidden;'>
-                            <img src='{url}/photo/download?photoId={photoId}' 
-                                 style='width:100%; height:100%; object-fit: contain;'/>
-                        </body>
-                    </html>";
+                        <html>
+                            <head>
+                                <style>
+                                    body {{
+                                        margin: 0;
+                                        padding: 0;
+                                        overflow: hidden;
+                                        background-color: transparent;
+                                    }}
+                                    .image-container {{
+                                        width: 100%;
+                                        height: 100%;
+                                        overflow: hidden;
+                                        position: relative; 
+                                        transform: translateZ(0); 
+                                    }}
+                                    img {{
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: cover;
+                                    }}
+                                </style>
+                            </head>
+                            <body>
+                                <div class='image-container'>
+                                    <img src='{url}/photo/download?photoId={photoId}'/>
+                                </div>
+                            </body>
+                        </html>";
 
                 webView.NavigateToString(html);
             }

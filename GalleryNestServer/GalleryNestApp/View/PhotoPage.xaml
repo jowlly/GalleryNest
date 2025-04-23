@@ -13,36 +13,50 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
     <Grid>
-        <ScrollViewer x:Name="MainScrollViewer" ScrollChanged="MainScrollViewer_ScrollChanged">
+        <ScrollViewer>
             <ItemsControl x:Name="PhotosItemsControl" ItemsSource="{Binding PhotoIds}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid VerticalAlignment="Top" Columns="3" />
+                        <WrapPanel
+                            MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            ItemHeight="250"
+                            ItemWidth="250"
+                            Orientation="Horizontal"
+                            VirtualizingPanel.IsContainerVirtualizable="True"
+                            VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.VirtualizationMode="Recycling" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid x:Name="WebViewContainer">
-                            <wv2:WebView2CompositionControl
-                                x:Name="PhotoWebView"
-                                Width="250"
-                                Height="250"
-                                Margin="5"
-                                DefaultBackgroundColor="Transparent"
-                                Loaded="WebView_Loaded" />
-
+                        <Grid
+                            x:Name="WebViewContainer"
+                            Width="250"
+                            Height="250">
+                            <Border ClipToBounds="True" CornerRadius="15">
+                                <wv2:WebView2CompositionControl
+                                    x:Name="PhotoWebView"
+                                    Width="250"
+                                    Height="250"
+                                    Margin="5"
+                                    DefaultBackgroundColor="Transparent"
+                                    Loaded="WebView_Loaded" />
+                            </Border>
                             <ui:Button
                                 Width="40"
                                 Height="40"
                                 Margin="20"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
-                                Panel.ZIndex="1"
+                                Panel.ZIndex="10"
+                                Background="#312f45"
                                 Command="{Binding DataContext.DeletePhotoCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                 CommandParameter="{Binding}"
                                 Icon="{ui:SymbolIcon Symbol=Delete48}" />
-
                         </Grid>
+
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
