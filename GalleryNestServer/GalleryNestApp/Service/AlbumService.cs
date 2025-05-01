@@ -1,9 +1,4 @@
-﻿using GalleryNestApp.Model;
-using GalleryNestServer.Entities;
-using Newtonsoft.Json;
-using System.Net.Http;
-using System.Text;
-using System.Windows;
+﻿using System.Net.Http;
 using Album = GalleryNestApp.Model.Album;
 
 namespace GalleryNestApp.Service

@@ -23,12 +23,12 @@ namespace GalleryNestServer.Repositories
 
         public IEnumerable<Photo> GetFavourite()
         {
-            return _collection.Find(entity=>entity.IsFavourite);
+            return _collection.Find(entity => entity.IsFavourite);
         }
 
         public IEnumerable<Photo> GetRecent()
         {
-            return _collection.FindAll().OrderBy(entity=>entity.CreatedAt);
+            return _collection.FindAll().OrderBy(entity => entity.CreatedAt);
         }
     }
 }

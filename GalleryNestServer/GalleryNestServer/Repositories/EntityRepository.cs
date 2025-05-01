@@ -42,9 +42,9 @@ namespace GalleryNestServer.Data
 
         public void Set(IEnumerable<T> photos)
         {
-            _collection.Upsert(photos.Select(x=> { x.CreatedAt = DateTime.Now; return x; }).ToList());
+            _collection.Upsert(photos.Select(x => { x.CreatedAt = DateTime.Now; return x; }).ToList());
         }
 
-        
+
     }
 }

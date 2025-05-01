@@ -1,16 +1,8 @@
-﻿using GalleryNestApp.Model;
-using GalleryNestApp.Service;
+﻿using GalleryNestApp.Service;
 using GalleryNestApp.View;
 using GalleryNestApp.ViewModel;
-using GalleryNestServer.Entities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Web.WebView2.Wpf;
-using Newtonsoft.Json;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Net.Http;
 using System.Windows;
-using Windows.Web.Http;
 using HttpClient = System.Net.Http.HttpClient;
 
 namespace GalleryNestApp

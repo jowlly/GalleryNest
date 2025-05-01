@@ -58,7 +58,7 @@ namespace GalleryNestApp.ViewModel
         }
         #endregion
 
-        public AlbumViewModel(AlbumService albumService,PhotoService photoService)
+        public AlbumViewModel(AlbumService albumService, PhotoService photoService)
         {
             _albumService = albumService;
             _photoService = photoService;
@@ -83,7 +83,7 @@ namespace GalleryNestApp.ViewModel
         {
             Task.Run(async () =>
             {
-                PhotoIds = [.. (await _photoService.LoadPhotosForAlbum(SelectedAlbum.Id)).Select(x=>x.Id)];
+                PhotoIds = [.. (await _photoService.LoadPhotosForAlbum(SelectedAlbum.Id)).Select(x => x.Id)];
             }).Wait();
 
         }

@@ -1,5 +1,4 @@
 ﻿using GalleryNestApp.Model;
-using Newtonsoft.Json;
 using System.Net.Http;
 
 namespace GalleryNestApp.Service

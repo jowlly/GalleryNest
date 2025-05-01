@@ -1,7 +1,6 @@
 ﻿using GalleryNestServer.Data;
 using GalleryNestServer.Entities;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.Packaging.Signing;
 
 namespace GalleryNestServer.Controllers
 {

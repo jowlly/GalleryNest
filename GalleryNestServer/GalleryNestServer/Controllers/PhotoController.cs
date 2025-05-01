@@ -2,7 +2,6 @@
 using GalleryNestServer.Entities;
 using GalleryNestServer.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.Packaging.Signing;
 
 namespace GalleryNestServer.Controllers
 {
@@ -79,7 +78,7 @@ namespace GalleryNestServer.Controllers
         }
 
         [HttpDelete("meta")]
-        public IActionResult Delete([FromQuery]IEnumerable<int> ids)
+        public IActionResult Delete([FromQuery] IEnumerable<int> ids)
         {
             if (ids.Count() < 0) return BadRequest();
             _photoRepository.Delete(ids);
@@ -105,7 +104,7 @@ namespace GalleryNestServer.Controllers
                 await file.CopyToAsync(fileStream);
             }
 
-            _photoRepository.Set([new Photo() { Path = uploadPath,AlbumId = albumId }]);
+            _photoRepository.Set([new Photo() { Path = uploadPath, AlbumId = albumId }]);
 
             return Ok(new { FilePath = uploadPath });
         }

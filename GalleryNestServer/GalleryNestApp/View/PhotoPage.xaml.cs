@@ -1,10 +1,8 @@
 ﻿using GalleryNestApp.ViewModel;
-using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
-using Microsoft.Xaml.Behaviors;
 using System.Windows.Controls;
-using GalleryNestApp.View;
 
 namespace GalleryNestApp
 {
@@ -51,7 +49,7 @@ namespace GalleryNestApp
             }
         }
 
-        
+
         private async void Upload_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
@@ -71,6 +69,6 @@ namespace GalleryNestApp
                 }
             }
         }
-        
+
     }
 }

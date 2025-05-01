@@ -1,14 +1,10 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace GalleryNestApp.Service
 {
-    public class EntityService<T>(HttpClient client,string url)
+    public class EntityService<T>(HttpClient client, string url)
     {
         protected readonly string _url = url;
         protected readonly HttpClient _httpClient = client;

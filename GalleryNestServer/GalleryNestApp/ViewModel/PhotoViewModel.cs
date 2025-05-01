@@ -1,17 +1,9 @@
 ﻿using GalleryNestApp.Model;
 using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel.Core;
-using LiteDB.Engine;
 using Microsoft.Web.WebView2.Wpf;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using Windows.Services.Maps;
 using Wpf.Ui.Input;
 
 namespace GalleryNestApp.ViewModel
@@ -78,15 +70,15 @@ namespace GalleryNestApp.ViewModel
         {
             Task.Run(async () =>
             {
-                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x=>x.Id)];
+                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
             }).Wait();
-            
+
 
         }
         );
         public ICommand LoadImageCommand => new RelayCommand<object>(param =>
         {
-            if (param!=null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is int photoId)
+            if (param != null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is int photoId)
             {
                 LoadImageToWebView((param as WebView2CompositionControl)!, photoId.ToString());
             }
@@ -98,7 +90,8 @@ namespace GalleryNestApp.ViewModel
             {
                 await PhotoService.AddAsync(new Photo()
                 {
-                    Id = 0,AlbumId=1
+                    Id = 0,
+                    AlbumId = 1
                 });
 
                 PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];

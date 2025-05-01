@@ -3,7 +3,6 @@ using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 
 namespace GalleryNestApp.Service
 {
@@ -95,7 +94,7 @@ namespace GalleryNestApp.Service
             }
         }
 
-        public async Task UploadFile(string filePath,int albumId =1)
+        public async Task UploadFile(string filePath, int albumId = 1)
         {
             using var fileStream = File.OpenRead(filePath);
             var fileName = System.IO.Path.GetFileName(filePath);
