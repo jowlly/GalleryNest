@@ -2,64 +2,95 @@
 using GalleryNestApp.Service;
 using GalleryNestApp.View;
 using GalleryNestApp.ViewModel;
+using GalleryNestServer.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
+using Windows.Web.Http;
+using HttpClient = System.Net.Http.HttpClient;
 
 namespace GalleryNestApp
 {
     public partial class MainWindow : Window
     {
-        private const string baseUrl = "http://localhost:5285/api";
-        private static HttpClient httpClient = new HttpClient();
-        private PhotoService photoService = new PhotoService(httpClient,baseUrl);
-        private DeviceService deviceService = new DeviceService(httpClient, baseUrl);
-        private AlbumService albumService = new AlbumService(httpClient, baseUrl);
-
-        private PhotoViewModel? photoViewModel = null;
-        private UpdateViewModel? updateViewModel = null;
-        private FavouriteViewModel? favouriteViewModel = null;
-        private DeviceViewModel? deviceViewModel = null;
-        private AlbumViewModel? albumViewModel = null;
+        private readonly INavigationService _navigationService;
+        private readonly ServiceProvider _serviceProvider;
 
         public MainWindow()
         {
-            photoViewModel = new PhotoViewModel(photoService);
-            updateViewModel = new UpdateViewModel(photoService);
-            favouriteViewModel = new FavouriteViewModel(photoService);
-            deviceViewModel = new DeviceViewModel(deviceService);
-            albumViewModel = new AlbumViewModel(albumService);
+            InitializeComponent();
 
-        InitializeComponent();
+            // Конфигурация DI-контейнера
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            _serviceProvider = services.BuildServiceProvider();
+
+            // Получаем сервис навигации
+            _navigationService = _serviceProvider.GetRequiredService<INavigationService>();
+
+            // Начальная навигация
+            _navigationService.NavigateTo<PhotoPage>();
         }
 
-        private async void PhotoButton_Click(object sender, RoutedEventArgs e)
+        private void ConfigureServices(IServiceCollection services)
         {
-            photoViewModel!.PhotoIds=[..(await photoViewModel.PhotoService.GetAllAsync()).Select(x=>x.Id)];
-            Main.Content = new PhotoPage(photoViewModel!);
+            // Регистрация сервисов
+            services.AddSingleton<HttpClient>();
+            services.AddSingleton(provider =>
+                new PhotoService(
+                    provider.GetRequiredService<HttpClient>(),
+                    "http://localhost:5285/api"
+                ));
+            services.AddSingleton(provider =>
+                new DeviceService(
+                    provider.GetRequiredService<HttpClient>(),
+                    "http://localhost:5285/api"
+                ));
+            services.AddSingleton(provider =>
+                new AlbumService(
+                    provider.GetRequiredService<HttpClient>(),
+                    "http://localhost:5285/api"
+                ));
+            // Регистрация ViewModel
+            services.AddTransient<PhotoViewModel>();
+            services.AddTransient<FullScreenPhotoViewModel>();
+            services.AddTransient<DeviceViewModel>();
+            services.AddTransient<AlbumViewModel>();
+            services.AddTransient<FavouriteViewModel>();
+            services.AddTransient<UpdateViewModel>();
+
+            // Регистрация страниц
+            services.AddTransient<PhotoPage>();
+            services.AddTransient<FullScreenPhotoPage>();
+            services.AddTransient<DevicePage>();
+            services.AddTransient<AlbumPage>();
+            services.AddTransient<FavouritesPage>();
+            services.AddTransient<UpdatesPage>();
+
+            // Регистрация NavigationService
+            services.AddSingleton<INavigationService>(provider =>
+                new NavigationService(Main, provider));
         }
+
+        // Обработчики кнопок навигации
+        private void PhotoButton_Click(object sender, RoutedEventArgs e)
+            => _navigationService.NavigateTo<PhotoPage>();
 
         private void DevicesButton_Click(object sender, RoutedEventArgs e)
-        {
-            Main.Content = new DevicePage(deviceViewModel!);
-        }
+            => _navigationService.NavigateTo<DevicePage>();
 
         private void FavouriteButton_Click(object sender, RoutedEventArgs e)
-        {
-            Main.Content = new FavouritesPage(favouriteViewModel!);
-        }
+            => _navigationService.NavigateTo<FavouritesPage>();
 
         private void AlbumButton_Click(object sender, RoutedEventArgs e)
-        {
-            Main.Content = new AlbumPage(albumViewModel!);
-        }
+            => _navigationService.NavigateTo<AlbumPage>();
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
-        {
-            Main.Content = new UpdatesPage(updateViewModel!);
-        }
+            => _navigationService.NavigateTo<UpdatesPage>();
     }
+
 }
