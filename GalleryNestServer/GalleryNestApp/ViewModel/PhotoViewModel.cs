@@ -1,6 +1,7 @@
 ﻿using GalleryNestApp.Model;
 using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel.Core;
+using LiteDB.Engine;
 using Microsoft.Web.WebView2.Wpf;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Windows.Services.Maps;
+using Wpf.Ui.Input;
 
 namespace GalleryNestApp.ViewModel
 {
@@ -81,7 +84,13 @@ namespace GalleryNestApp.ViewModel
 
         }
         );
-
+        public ICommand LoadImageCommand => new RelayCommand<object>(param =>
+        {
+            if (param!=null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is int photoId)
+            {
+                LoadImageToWebView((param as WebView2CompositionControl)!, photoId.ToString());
+            }
+        });
         private RelayCommand? addPhotoCommand = null;
         public RelayCommand AddPhotoCommand => addPhotoCommand ??= new RelayCommand(obj =>
         {

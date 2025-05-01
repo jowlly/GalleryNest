@@ -4,6 +4,7 @@ using Microsoft.Web.WebView2.Core;
 using System.Windows;
 using Microsoft.Xaml.Behaviors;
 using System.Windows.Controls;
+using GalleryNestApp.View;
 
 namespace GalleryNestApp
 {
@@ -26,7 +27,6 @@ namespace GalleryNestApp
         {
             await CoreWebView2Environment.CreateAsync();
         }
-        
         private async void WebView_Loaded(object sender, RoutedEventArgs e)
         {
             var webView = sender as WebView2CompositionControl;
