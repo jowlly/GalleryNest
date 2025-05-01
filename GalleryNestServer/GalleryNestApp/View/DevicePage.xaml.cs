@@ -1,4 +1,6 @@
 ﻿using GalleryNestApp.ViewModel;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -21,14 +23,26 @@ namespace GalleryNestApp.View
 
         private async void QRWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await QRWebView.EnsureCoreWebView2Async();
-            await LoadQRAsync(await deviceViewModel.deviceService.LoadQR());
-        }
+            var webView = sender as WebView2CompositionControl;
+            if (webView == null) return;
 
-        public async Task LoadQRAsync(string svgContent)
-        {
-            await QRWebView.EnsureCoreWebView2Async();
-            QRWebView.NavigateToString(svgContent);
+            if (webView.CoreWebView2 == null)
+            {
+                var env = await CoreWebView2Environment.CreateAsync();
+                await webView.EnsureCoreWebView2Async(env);
+            }
+
+            var photoId = Convert.ToString(webView.DataContext);
+            if (string.IsNullOrEmpty(photoId)) return;
+
+            try
+            {
+                webView.NavigateToString(await deviceViewModel.deviceService.LoadQR());
+            }
+            catch (Exception ex)
+            {
+                webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
         }
     }
 }
