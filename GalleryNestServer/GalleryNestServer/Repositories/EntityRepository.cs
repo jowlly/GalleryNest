@@ -13,11 +13,13 @@ namespace GalleryNestServer.Data
             _database = database;
             _collection = _database.GetCollection<T>(collectionName);
             _collection.EnsureIndex(x => x.Id);
+            _collection.EnsureIndex(x => x.CreatedAt);
         }
 
         public void Delete(IEnumerable<int> ids)
         {
-            _collection.DeleteMany(entity => ids.Contains(entity.Id));
+
+            _collection.DeleteMany(entity => ids.Contains(entity.Id) && entity.Id != 1);
         }
 
         public IEnumerable<T> GetAll()

@@ -43,6 +43,12 @@ namespace GalleryNestServer.Controllers
             var photo = _photoRepository.GetByAlbumId(albumId);
             return Ok(photo);
         }
+        [HttpGet("meta/latest/{albumId}")]
+        public ActionResult<Photo> GetLatestByAlbumId([FromQuery] int albumId)
+        {
+            var photo = _photoRepository.GetLatestByAlbumId(albumId);
+            return Ok(photo);
+        }
         [HttpGet("meta/favourite")]
         public ActionResult<Photo> GetByFavourite()
         {
@@ -79,9 +85,8 @@ namespace GalleryNestServer.Controllers
             _photoRepository.Delete(ids);
             return NoContent();
         }
-
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadPhoto([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadPhoto([FromForm] IFormFile file, [FromQuery] int albumId)
         {
             if (file == null || file.Length == 0)
             {
@@ -100,7 +105,7 @@ namespace GalleryNestServer.Controllers
                 await file.CopyToAsync(fileStream);
             }
 
-            _photoRepository.Set([new Photo() { Path = uploadPath }]);
+            _photoRepository.Set([new Photo() { Path = uploadPath,AlbumId = albumId }]);
 
             return Ok(new { FilePath = uploadPath });
         }
@@ -109,6 +114,19 @@ namespace GalleryNestServer.Controllers
         public IActionResult DownloadPhoto([FromQuery] int photoId)
         {
             var photo = _photoRepository.GetById(photoId);
+
+            if (photo == null)
+                return NotFound("Photo not found.");
+
+            var mimeType = GetMimeType(photo.Path);
+
+            return PhysicalFile(photo.Path, mimeType);
+        }
+
+        [HttpGet("download/latest")]
+        public IActionResult DownloadLatestAlbumPhoto([FromQuery] int albumId)
+        {
+            var photo = _photoRepository.GetLatestByAlbumId(albumId);
 
             if (photo == null)
                 return NotFound("Photo not found.");

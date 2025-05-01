@@ -10,17 +10,23 @@ namespace GalleryNestServer.Repositories
         {
             _collection.EnsureIndex(x => x.AlbumId);
         }
-        public object GetByAlbumId(int albumId)
+        public IEnumerable<Photo> GetByAlbumId(int albumId)
         {
             return _collection.Find(entity => entity.AlbumId == albumId);
         }
+        public Photo? GetLatestByAlbumId(int albumId)
+        {
+            return _collection.Find(entity => entity.AlbumId == albumId)
+                               .OrderByDescending(x => x.CreatedAt)
+                               .FirstOrDefault();
+        }
 
-        public object GetFavourite()
+        public IEnumerable<Photo> GetFavourite()
         {
             return _collection.Find(entity=>entity.IsFavourite);
         }
 
-        public object GetRecent()
+        public IEnumerable<Photo> GetRecent()
         {
             return _collection.FindAll().OrderBy(entity=>entity.CreatedAt);
         }

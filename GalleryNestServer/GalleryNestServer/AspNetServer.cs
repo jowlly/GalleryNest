@@ -43,7 +43,7 @@ namespace GalleryNestServer
             using var scope = app.Services.CreateScope();
             scope.ServiceProvider.GetRequiredService<EntityRepository<Album>>().Set(
             [
-                new Album(){ Id=0,Name="Default"}
+                new Album(){Id=1,Name="Без альбома"}
             ]);
         }
     }

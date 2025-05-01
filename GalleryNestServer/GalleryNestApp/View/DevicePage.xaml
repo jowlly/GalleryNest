@@ -17,6 +17,7 @@
             Height="200"
             Margin="20"
             HorizontalAlignment="Left"
-            VerticalAlignment="Top" />
+            VerticalAlignment="Top"
+            Loaded="QRWindow_Loaded" />
     </Grid>
 </Page>

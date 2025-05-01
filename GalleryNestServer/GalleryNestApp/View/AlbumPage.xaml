@@ -5,7 +5,84 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:GalleryNestApp.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Title="AlbumPage"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    mc:Ignorable="d" />
+    mc:Ignorable="d">
+    <Grid>
+        <ScrollViewer>
+            <ItemsControl x:Name="PhotosItemsControl" ItemsSource="{Binding Albums}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel
+                            MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            ItemHeight="250"
+                            ItemWidth="250"
+                            Orientation="Horizontal"
+                            VirtualizingPanel.IsContainerVirtualizable="True"
+                            VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.VirtualizationMode="Recycling" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="20" />
+                            </Grid.RowDefinitions>
+                            <Grid
+                                x:Name="WebViewContainer"
+                                Grid.Row="0"
+                                Width="250"
+                                Height="250">
+                                <Border ClipToBounds="True" CornerRadius="15">
+                                    <wv2:WebView2CompositionControl
+                                        x:Name="PhotoWebView"
+                                        Width="250"
+                                        Height="250"
+                                        Margin="5"
+                                        DefaultBackgroundColor="Transparent"
+                                        Loaded="WebView_Loaded" />
+                                </Border>
+                                <ui:Button
+                                    Width="40"
+                                    Height="40"
+                                    Margin="20"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    Panel.ZIndex="10"
+                                    Background="#312f45"
+                                    Command="{Binding DataContext.DeleteAlbumCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding}"
+                                    Icon="{ui:SymbolIcon Symbol=Delete48}" />
+                            </Grid>
+                            <TextBlock Grid.Row="1" Text="{Binding Name}" />
+                        </Grid>
+
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        <StackPanel
+            Margin="20"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom">
+            <ui:Button
+                Width="40"
+                Height="40"
+                Click="Upload_Click"
+                Icon="{ui:SymbolIcon Symbol=Add48}" />
+            <Rectangle Height="10" />
+            <ui:Button
+                Width="40"
+                Height="40"
+                Command="{Binding LoadAlbumsCommand}"
+                Icon="{ui:SymbolIcon Symbol=ArrowClockwise32}" />
+        </StackPanel>
+    </Grid>
+</Page>

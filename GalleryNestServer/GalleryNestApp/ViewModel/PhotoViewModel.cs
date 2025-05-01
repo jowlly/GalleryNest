@@ -17,6 +17,7 @@ namespace GalleryNestApp.ViewModel
     {
         #region Fields
         private PhotoService _photoService;
+        public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
 
         private ObservableCollection<Photo> _photos = [];
         private ObservableCollection<int> _photoIds = [];
@@ -24,7 +25,6 @@ namespace GalleryNestApp.ViewModel
         #endregion
 
         #region Properties
-        public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
         public ObservableCollection<Photo> Photos
         {
             get => _photos;
@@ -89,7 +89,7 @@ namespace GalleryNestApp.ViewModel
             {
                 await PhotoService.AddAsync(new Photo()
                 {
-                    Id = 0,
+                    Id = 0,AlbumId=1
                 });
 
                 PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];

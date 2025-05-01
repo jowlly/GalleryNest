@@ -14,7 +14,6 @@ namespace GalleryNestApp.View
         public DevicePage(DeviceViewModel deviceViewModel)
         {
             InitializeComponent();
-            Loaded += QRWindow_Loaded;
             this.deviceViewModel = deviceViewModel;
             DataContext = this.deviceViewModel;
         }
