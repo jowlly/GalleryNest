@@ -96,7 +96,6 @@ namespace GalleryNestApp.ViewModel
                 {
                     await _albumService.AddAsync(new Album()
                     {
-                        Id = 0,
                         Name = AlbumName
                     });
 

@@ -14,15 +14,20 @@ namespace GalleryNestApp.Service
             _serviceProvider = serviceProvider;
         }
 
-        public void NavigateTo<T>() where T : Page
-            => NavigateTo(typeof(T));
+        public void NavigateTo<T>(object? parameter = null) where T : Page
+            => NavigateTo(typeof(T),parameter);
 
-        public void NavigateTo(Type pageType)
+        public void NavigateTo(Type pageType, object? parameter = null)
         {
             if (!typeof(Page).IsAssignableFrom(pageType))
                 throw new ArgumentException("PageType must inherit from Page");
 
             var page = _serviceProvider.GetRequiredService(pageType) as Page;
+            if (page == null) return;
+            if (page.DataContext is IParameterReceiver viewModel)
+            {
+                viewModel.ReceiveParameter(parameter);
+            }
             _frame.Content = page;
         }
 

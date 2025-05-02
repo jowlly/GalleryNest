@@ -9,23 +9,22 @@ namespace GalleryNestApp
 {
     public partial class MainWindow : Window
     {
-        private readonly INavigationService _navigationService;
+        private readonly INavigationService navigationService;
         private readonly ServiceProvider _serviceProvider;
+
+        public INavigationService NavigationService => navigationService;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Конфигурация DI-контейнера
             var services = new ServiceCollection();
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
-            // Получаем сервис навигации
-            _navigationService = _serviceProvider.GetRequiredService<INavigationService>();
+            navigationService = _serviceProvider.GetRequiredService<INavigationService>();
 
-            // Начальная навигация
-            _navigationService.NavigateTo<PhotoPage>();
+            navigationService.NavigateTo<PhotoPage>();
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -50,6 +49,7 @@ namespace GalleryNestApp
             // Регистрация ViewModel
             services.AddTransient<PhotoViewModel>();
             services.AddTransient<FullScreenPhotoViewModel>();
+            services.AddTransient<AlbumGalleryViewModel>();
             services.AddTransient<DeviceViewModel>();
             services.AddTransient<AlbumViewModel>();
             services.AddTransient<FavouriteViewModel>();
@@ -58,6 +58,7 @@ namespace GalleryNestApp
             // Регистрация страниц
             services.AddTransient<PhotoPage>();
             services.AddTransient<FullScreenPhotoPage>();
+            services.AddTransient<AlbumGalleryPage>();
             services.AddTransient<DevicePage>();
             services.AddTransient<AlbumPage>();
             services.AddTransient<FavouritesPage>();
@@ -70,19 +71,19 @@ namespace GalleryNestApp
 
         // Обработчики кнопок навигации
         private void PhotoButton_Click(object sender, RoutedEventArgs e)
-            => _navigationService.NavigateTo<PhotoPage>();
+            => NavigationService.NavigateTo<PhotoPage>();
 
         private void DevicesButton_Click(object sender, RoutedEventArgs e)
-            => _navigationService.NavigateTo<DevicePage>();
+            => NavigationService.NavigateTo<DevicePage>();
 
         private void FavouriteButton_Click(object sender, RoutedEventArgs e)
-            => _navigationService.NavigateTo<FavouritesPage>();
+            => NavigationService.NavigateTo<FavouritesPage>();
 
         private void AlbumButton_Click(object sender, RoutedEventArgs e)
-            => _navigationService.NavigateTo<AlbumPage>();
+            => NavigationService.NavigateTo<AlbumPage>();
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
-            => _navigationService.NavigateTo<UpdatesPage>();
+            => NavigationService.NavigateTo<UpdatesPage>();
     }
 
 }

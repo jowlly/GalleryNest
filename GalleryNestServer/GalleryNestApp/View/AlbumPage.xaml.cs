@@ -4,6 +4,7 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace GalleryNestApp.View
 {
@@ -54,22 +55,41 @@ namespace GalleryNestApp.View
 
         private async void Upload_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            var dialog = new AddAlbumDialog();
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.AlbumName))
             {
-                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp|All Files|*.*",
-                Multiselect = true
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                try
+                albumViewModel.AlbumName = dialog.AlbumName;
+                if (albumViewModel.AddAlbumCommand.CanExecute(null))
                 {
-                    await albumViewModel.UploadFile(openFileDialog.FileNames.ToList());
-                }
-                catch (Exception ex)
-                {
+                    albumViewModel.AddAlbumCommand.Execute(null);
                 }
             }
+        }
+
+        private void WebViewContainer_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject source)
+            {
+                var button = FindVisualParent<Button>(source);
+                if (button != null && button.Command == albumViewModel.DeleteAlbumCommand)
+                    return;
+            }
+
+            if (sender is Grid grid && grid.DataContext is int photoId)
+            {
+                var mainWindow = Window.GetWindow(this) as MainWindow;
+                mainWindow?.NavigationService.NavigateTo<AlbumGalleryPage>();
+            }
+        }
+        private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent)
+                    return parent;
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
         }
     }
 }

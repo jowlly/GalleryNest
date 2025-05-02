@@ -11,13 +11,13 @@ namespace GalleryNestApp.Service
 
         public async Task AddAsync(T album)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(album), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonConvert.SerializeObject(new List<T> { album }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync($"{_url}", content);
         }
 
         public async Task EditAsync(T album)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(album), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonConvert.SerializeObject(new List<T> { album }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync($"{_url}", content);
         }
 
