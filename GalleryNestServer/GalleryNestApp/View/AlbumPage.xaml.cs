@@ -1,4 +1,5 @@
 ﻿using GalleryNestApp.Model;
+using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -14,18 +15,16 @@ namespace GalleryNestApp.View
     public partial class AlbumPage : Page
     {
         private AlbumViewModel albumViewModel;
+        private WebView2Provider _webView2Provider;
 
-        public AlbumPage(AlbumViewModel albumViewModel)
+        public WebView2Provider WebView2Provider { get => _webView2Provider; set => _webView2Provider = value; }
+
+        public AlbumPage(AlbumViewModel albumViewModel, WebView2Provider webView2Provider)
         {
             this.albumViewModel = albumViewModel;
+            this._webView2Provider = webView2Provider;
             InitializeComponent();
             DataContext = this.albumViewModel;
-            InitializeAsync();
-        }
-
-        private async void InitializeAsync()
-        {
-            await CoreWebView2Environment.CreateAsync();
         }
 
         private async void WebView_Loaded(object sender, RoutedEventArgs e)
@@ -35,7 +34,7 @@ namespace GalleryNestApp.View
 
             if (webView.CoreWebView2 == null)
             {
-                var env = await CoreWebView2Environment.CreateAsync();
+                var env = await WebView2Provider.GetEnvironmentAsync();
                 await webView.EnsureCoreWebView2Async(env);
             }
 
@@ -50,6 +49,7 @@ namespace GalleryNestApp.View
             {
                 webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
             }
+
         }
 
 
@@ -75,10 +75,10 @@ namespace GalleryNestApp.View
                     return;
             }
 
-            if (sender is Grid grid && grid.DataContext is int photoId)
+            if (sender is Grid grid && grid.DataContext is Album)
             {
                 var mainWindow = Window.GetWindow(this) as MainWindow;
-                mainWindow?.NavigationService.NavigateTo<AlbumGalleryPage>();
+                mainWindow?.NavigationService.NavigateTo<AlbumGalleryPage>((grid.DataContext as Album)!.Id);
             }
         }
         private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject

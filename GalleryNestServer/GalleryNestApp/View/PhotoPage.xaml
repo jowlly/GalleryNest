@@ -16,7 +16,8 @@
         <local:PhotoGalleryControl
             DeleteCommand="{Binding DeletePhotoCommand}"
             ItemsSource="{Binding PhotoIds}"
-            LoadImageCommand="{Binding LoadImageCommand}" />
+            LoadImageCommand="{Binding LoadImageCommand}" 
+            WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}"/>
         <StackPanel
             Margin="20"
             HorizontalAlignment="Right"

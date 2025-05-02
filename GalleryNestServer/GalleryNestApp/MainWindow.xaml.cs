@@ -29,7 +29,7 @@ namespace GalleryNestApp
 
         private void ConfigureServices(IServiceCollection services)
         {
-            // Регистрация сервисов
+            services.AddSingleton<WebView2Provider>();
             services.AddSingleton<HttpClient>();
             services.AddSingleton(provider =>
                 new PhotoService(

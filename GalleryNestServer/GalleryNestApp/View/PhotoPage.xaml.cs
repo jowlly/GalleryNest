@@ -1,4 +1,5 @@
-﻿using GalleryNestApp.ViewModel;
+﻿using GalleryNestApp.Service;
+using GalleryNestApp.ViewModel;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
@@ -11,20 +12,19 @@ namespace GalleryNestApp
     /// </summary>
     public partial class PhotoPage : Page
     {
-        private PhotoViewModel photoViewModel;
+        private PhotoViewModel _photoViewModel;
+        private WebView2Provider _webView2Provider;
 
-        public PhotoPage(PhotoViewModel photoViewModel)
+        public WebView2Provider WebView2Provider { get => _webView2Provider; set => _webView2Provider = value; }
+
+        public PhotoPage(PhotoViewModel photoViewModel, WebView2Provider webView2Provider)
         {
-            this.photoViewModel = photoViewModel;
+            this._photoViewModel = photoViewModel;
+            this._webView2Provider = webView2Provider;
             InitializeComponent();
-            DataContext = this.photoViewModel;
-            InitializeAsync();
+            DataContext = this._photoViewModel;
         }
 
-        private async void InitializeAsync()
-        {
-            await CoreWebView2Environment.CreateAsync();
-        }
         private async void WebView_Loaded(object sender, RoutedEventArgs e)
         {
             var webView = sender as WebView2CompositionControl;
@@ -32,7 +32,7 @@ namespace GalleryNestApp
 
             if (webView.CoreWebView2 == null)
             {
-                var env = await CoreWebView2Environment.CreateAsync();
+                var env = await WebView2Provider.GetEnvironmentAsync();
                 await webView.EnsureCoreWebView2Async(env);
             }
 
@@ -41,7 +41,7 @@ namespace GalleryNestApp
 
             try
             {
-                photoViewModel.LoadImageToWebView(webView, photoId);
+                _photoViewModel.LoadImageToWebView(webView, photoId);
             }
             catch (Exception ex)
             {
@@ -62,7 +62,7 @@ namespace GalleryNestApp
             {
                 try
                 {
-                    await photoViewModel.UploadFile(openFileDialog.FileNames.ToList());
+                    await _photoViewModel.UploadFile(openFileDialog.FileNames.ToList());
                 }
                 catch (Exception ex)
                 {

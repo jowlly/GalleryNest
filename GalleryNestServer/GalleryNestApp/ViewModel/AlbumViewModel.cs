@@ -3,6 +3,8 @@ using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
+using Wpf.Ui.Input;
 
 namespace GalleryNestApp.ViewModel
 {
@@ -66,6 +68,18 @@ namespace GalleryNestApp.ViewModel
         }
 
         #region Commands
+        public ICommand LoadImageCommand => new RelayCommand<object>(param =>
+        {
+            if (param != null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is Album album)
+            {
+                LoadImageToWebView((param as WebView2CompositionControl)!, album.Id.ToString());
+            }
+        });
+
+        public void LoadImageToWebView(WebView2CompositionControl webView, string albumId)
+        {
+            PhotoService.LoadAlbumPreviewWebView(webView, albumId);
+        }
 
         private RelayCommand? loadAlbumsCommand = null;
         public RelayCommand LoadAlbumsCommand => loadAlbumsCommand ??= new RelayCommand(obj =>

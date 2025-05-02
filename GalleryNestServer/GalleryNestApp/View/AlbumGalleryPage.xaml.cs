@@ -1,4 +1,5 @@
 ﻿using GalleryNestApp.ViewModel;
+using Microsoft.Web.WebView2.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,8 +27,13 @@ namespace GalleryNestApp.View
         {
             this.albumGalleryViewModel = viewModel;
             InitializeComponent();
-            DataContext = this.albumViewModel;
+            DataContext = this.albumGalleryViewModel;
             InitializeAsync();
+        }
+
+        private async void InitializeAsync()
+        {
+            await CoreWebView2Environment.CreateAsync();
         }
     }
 }
