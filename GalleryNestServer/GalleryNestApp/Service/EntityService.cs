@@ -47,5 +47,18 @@ namespace GalleryNestApp.Service
             var response = await _httpClient.GetStringAsync($"{_url}");
             return JsonConvert.DeserializeObject<T[]>(response) ?? [];
         }
+
+        public async Task<IEnumerable<T>> GetPagedAsync(int page, int pageSize)
+        {
+            var uriBuilder = new UriBuilder($"{_url}");
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+            query["page"] = page.ToString();
+            query["pageSize"] = pageSize.ToString();
+            uriBuilder.Query = query.ToString();
+
+            var response = await _httpClient.GetStringAsync(uriBuilder.Uri.ToString());
+            var result = JsonConvert.DeserializeObject<IEnumerable<T>>(response);
+            return result ?? [];
+        }
     }
 }

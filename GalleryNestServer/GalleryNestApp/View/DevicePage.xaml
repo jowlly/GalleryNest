@@ -18,6 +18,7 @@
             Margin="20"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
-            Loaded="QRWindow_Loaded" />
+            Loaded="QRWindow_Loaded"
+            Unloaded="WebView_Unloaded" />
     </Grid>
 </Page>

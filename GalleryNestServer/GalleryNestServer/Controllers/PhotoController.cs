@@ -23,42 +23,55 @@ namespace GalleryNestServer.Controllers
             PhotoStoragePath = Path.Combine(_env.WebRootPath, "images");
         }
 
-        [HttpGet("meta")]
-        public ActionResult<IEnumerable<Photo>> GetAll()
-        {
-            var products = _photoRepository.GetAll();
-            return Ok(products);
-        }
-
-        [HttpGet("meta/{photoId}")]
+        [HttpGet("meta/exact")]
         public ActionResult<Photo> GetById([FromQuery] int photoId)
         {
             var photo = _photoRepository.GetById(photoId);
             return Ok(photo);
         }
-        [HttpGet("meta/{albumId}")]
-        public ActionResult<Photo> GetByAlbumId([FromQuery] int albumId)
+        [HttpGet("meta")]
+        public ActionResult<IEnumerable<Photo>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var photo = _photoRepository.GetByAlbumId(albumId);
-            return Ok(photo);
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var products = _photoRepository.GetPaged(pageNumber, pageSize);
+            return Ok(products);
         }
-        [HttpGet("meta/latest/{albumId}")]
+
+        [HttpGet("meta/album")]
+        public ActionResult<IEnumerable<Photo>> GetByAlbumId([FromQuery] int albumId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var photos = _photoRepository.GetByAlbumId(albumId, pageNumber, pageSize);
+            return Ok(photos);
+        }
+        [HttpGet("meta/latest")]
         public ActionResult<Photo> GetLatestByAlbumId([FromQuery] int albumId)
         {
             var photo = _photoRepository.GetLatestByAlbumId(albumId);
             return Ok(photo);
         }
         [HttpGet("meta/favourite")]
-        public ActionResult<Photo> GetByFavourite()
+        public ActionResult<Photo> GetByFavourite([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var photo = _photoRepository.GetFavourite();
-            return Ok(photo);
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var photos = _photoRepository.GetFavourite(pageNumber, pageSize);
+            return Ok(photos);
         }
+
         [HttpGet("meta/recent")]
-        public ActionResult<Photo> GetByAlbumId()
+        public ActionResult<IEnumerable<Photo>> GetRecent([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var photo = _photoRepository.GetRecent();
-            return Ok(photo);
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var photos = _photoRepository.GetRecent(pageNumber, pageSize);
+            return Ok(photos);
         }
 
 

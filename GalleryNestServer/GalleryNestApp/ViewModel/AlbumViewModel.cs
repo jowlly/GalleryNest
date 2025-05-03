@@ -108,7 +108,7 @@ namespace GalleryNestApp.ViewModel
         {
             Task.Run(async () =>
             {
-                PhotoIds = [.. (await _photoService.LoadPhotosForAlbum(SelectedAlbum.Id)).Select(x => x.Id)];
+                PhotoIds = [.. (await _photoService.LoadPhotosForAlbum(SelectedAlbum.Id,1,10)).Select(x => x.Id)];
             }).Wait();
 
         }

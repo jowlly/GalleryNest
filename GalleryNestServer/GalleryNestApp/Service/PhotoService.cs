@@ -111,11 +111,20 @@ namespace GalleryNestApp.Service
             }
         }
 
-        public async Task<IEnumerable<Photo>> LoadPhotosForAlbum(int albumId)
+        public async Task<IEnumerable<Photo>> LoadPhotosForAlbum(int albumId, int page, int pageSize)
         {
-            var response = await client.GetStringAsync($"{url}/photo/meta?albumId={albumId}");
-            return JsonConvert.DeserializeObject<Photo[]>(response) ?? [];
+            var uriBuilder = new UriBuilder($"{url}/photo/meta/album");
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+            query["albumId"] = albumId.ToString();
+            query["page"] = page.ToString();
+            query["pageSize"] = pageSize.ToString();
+            uriBuilder.Query = query.ToString();
+
+            var response = await client.GetStringAsync(uriBuilder.Uri.ToString());
+            var result = JsonConvert.DeserializeObject<IEnumerable<Photo>>(response);
+            return result ?? [];
         }
+
         private async Task<IEnumerable<Photo>> LoadFavouritePhotos()
         {
             var response = await client.GetStringAsync($"{url}/photo/meta/favourite");

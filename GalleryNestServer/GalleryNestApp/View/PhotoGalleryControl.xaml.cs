@@ -1,5 +1,6 @@
 ﻿using GalleryNestApp.Model;
 using GalleryNestApp.Service;
+using GalleryNestApp.ViewModel;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections;
@@ -188,5 +189,16 @@ namespace GalleryNestApp.View
             return parentObject is T parent ? parent : FindVisualParent<T>(parentObject);
         }
 
+        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var scrollViewer = (ScrollViewer)sender;
+            var threshold = 0.95; 
+
+            if (scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight * threshold &&
+                DataContext is PhotoViewModel viewModel)
+            {
+                viewModel.LoadNextPageCommand.Execute(null);
+            }
+        }
     }
 }

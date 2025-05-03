@@ -84,7 +84,7 @@ namespace GalleryNestServer.Controllers
         }
 
         [HttpGet("qr")]
-        public async Task<IActionResult> GenerateQrCode()
+        public IActionResult GenerateQrCode()
         {
             try
             {

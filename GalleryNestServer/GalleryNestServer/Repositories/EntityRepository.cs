@@ -15,6 +15,13 @@ namespace GalleryNestServer.Data
             _collection.EnsureIndex(x => x.Id);
             _collection.EnsureIndex(x => x.CreatedAt);
         }
+        public IEnumerable<T> GetPaged(int pageNumber, int pageSize)
+        {
+            return _collection.FindAll()
+                              .OrderByDescending(x => x.CreatedAt)
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize);
+        }
 
         public void Delete(IEnumerable<int> ids)
         {

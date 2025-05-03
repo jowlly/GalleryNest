@@ -1,4 +1,5 @@
-﻿using GalleryNestApp.ViewModel;
+﻿using GalleryNestApp.Service;
+using GalleryNestApp.ViewModel;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
@@ -12,11 +13,13 @@ namespace GalleryNestApp.View
     public partial class DevicePage : Page
     {
         private DeviceViewModel deviceViewModel;
+        private WebView2Provider provider;
 
-        public DevicePage(DeviceViewModel deviceViewModel)
+        public DevicePage(DeviceViewModel deviceViewModel,WebView2Provider provider)
         {
             InitializeComponent();
             this.deviceViewModel = deviceViewModel;
+            this.provider = provider;
             DataContext = this.deviceViewModel;
         }
 
@@ -28,7 +31,7 @@ namespace GalleryNestApp.View
 
             if (webView.CoreWebView2 == null)
             {
-                var env = await CoreWebView2Environment.CreateAsync();
+                var env = await provider.GetEnvironmentAsync();
                 await webView.EnsureCoreWebView2Async(env);
             }
 
@@ -42,6 +45,13 @@ namespace GalleryNestApp.View
             catch (Exception ex)
             {
                 webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
+        }
+        private void WebView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is WebView2CompositionControl webView)
+            {
+                webView.Dispose();
             }
         }
     }

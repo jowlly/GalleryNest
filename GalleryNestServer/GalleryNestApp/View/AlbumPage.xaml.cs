@@ -53,7 +53,7 @@ namespace GalleryNestApp.View
         }
 
 
-        private async void Upload_Click(object sender, RoutedEventArgs e)
+        private void Upload_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new AddAlbumDialog();
             if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.AlbumName))

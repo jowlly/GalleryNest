@@ -10,10 +10,6 @@ namespace GalleryNestServer.Repositories
         {
             _collection.EnsureIndex(x => x.AlbumId);
         }
-        public IEnumerable<Photo> GetByAlbumId(int albumId)
-        {
-            return _collection.Find(entity => entity.AlbumId == albumId);
-        }
         public Photo? GetLatestByAlbumId(int albumId)
         {
             return _collection.Find(entity => entity.AlbumId == albumId)
@@ -21,14 +17,28 @@ namespace GalleryNestServer.Repositories
                                .FirstOrDefault();
         }
 
-        public IEnumerable<Photo> GetFavourite()
+        public IEnumerable<Photo> GetByAlbumId(int albumId, int pageNumber, int pageSize)
         {
-            return _collection.Find(entity => entity.IsFavourite);
+            return _collection.Find(entity => entity.AlbumId == albumId)
+                              .OrderByDescending(x => x.CreatedAt)
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize);
         }
 
-        public IEnumerable<Photo> GetRecent()
+        public IEnumerable<Photo> GetFavourite(int pageNumber, int pageSize)
         {
-            return _collection.FindAll().OrderBy(entity => entity.CreatedAt);
+            return _collection.Find(entity => entity.IsFavourite)
+                              .OrderByDescending(x => x.CreatedAt)
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize);
+        }
+
+        public IEnumerable<Photo> GetRecent(int pageNumber, int pageSize)
+        {
+            return _collection.FindAll()
+                              .OrderByDescending(x => x.CreatedAt)
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize);
         }
     }
 }
