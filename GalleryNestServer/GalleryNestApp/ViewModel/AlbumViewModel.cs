@@ -1,5 +1,6 @@
 ﻿using GalleryNestApp.Model;
 using GalleryNestApp.Service;
+using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
@@ -17,6 +18,8 @@ namespace GalleryNestApp.ViewModel
         private string _albumName = string.Empty;
         private Album? _selectedAlbum = null;
         private PhotoService _photoService;
+        private readonly INavigationService _navigationService;
+
         public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
         #endregion
 
@@ -60,10 +63,11 @@ namespace GalleryNestApp.ViewModel
         }
         #endregion
 
-        public AlbumViewModel(AlbumService albumService, PhotoService photoService)
+        public AlbumViewModel(AlbumService albumService, PhotoService photoService, INavigationService navigationService)
         {
             _albumService = albumService;
             _photoService = photoService;
+            _navigationService = navigationService;
             Albums = [.. Task.Run(() => _albumService.GetAllAsync()).Result];
         }
 
@@ -80,6 +84,13 @@ namespace GalleryNestApp.ViewModel
         {
             PhotoService.LoadAlbumPreviewWebView(webView, albumId);
         }
+
+        public ICommand OpenAlbumCommand => new RelayCommand<object>(param =>
+        {
+            if(param is Album)
+                _navigationService.NavigateTo<AlbumGalleryPage>((param as Album)!.Id);
+        });
+
 
         private RelayCommand? loadAlbumsCommand = null;
         public RelayCommand LoadAlbumsCommand => loadAlbumsCommand ??= new RelayCommand(obj =>

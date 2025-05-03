@@ -18,7 +18,6 @@
                         MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Top"
-                        ItemHeight="250"
                         ItemWidth="250"
                         Orientation="Horizontal"
                         VirtualizingPanel.IsContainerVirtualizable="True"
@@ -28,60 +27,65 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Grid Width="250" 
-                        Height="270"
-                        Margin="10"
-                        PreviewMouseDown="Grid_PreviewMouseDown">
-                        
-                    <Grid Width="250" Height="250">
-                        <ui:ProgressRing
-    x:Name="LoadingIndicator"
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Center"
-                    Visibility="Visible"
-                    Foreground="Black"
-                            IsIndeterminate="True"
-                            IsEnabled="True"
-                    Width="40"
-                    Height="40"
-                    Panel.ZIndex="1"/>
-                        <Border ClipToBounds="True" CornerRadius="15">
-                            <wv2:WebView2CompositionControl
-                                x:Name="PhotoWebView"
-                                Width="250"
-                                Height="250"
-                                Margin="5"
-                                DefaultBackgroundColor="Transparent"
-                                Loaded="WebView_Loaded"
-    Unloaded="WebView_Unloaded"
-                                NavigationCompleted="WebView_NavigationCompleted"/>
-                        </Border>
-                        <ui:Button
-                            x:Name="DeleteButton"
-                            Width="40"
-                            Height="40"
-                            Margin="20"
-                    Visibility="Hidden"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            Panel.ZIndex="10"
-                            Background="#312f45"
-                            Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding}"
-                            Icon="{ui:SymbolIcon Symbol=Delete48}" />
-                    </Grid>
-                        <StackPanel 
+                    <Grid Width="250">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid
+                            Grid.Row="0"
+                            Width="250"
+                            Height="250"
+                            Margin="10"
+                            PreviewMouseDown="Grid_PreviewMouseDown">
+                            <ui:ProgressRing
+                                x:Name="LoadingIndicator"
+                                Width="40"
+                                Height="40"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Panel.ZIndex="1"
+                                Foreground="Black"
+                                IsEnabled="True"
+                                IsIndeterminate="True"
+                                Visibility="Visible" />
+                            <Border ClipToBounds="True" CornerRadius="15">
+                                <wv2:WebView2CompositionControl
+                                    x:Name="PhotoWebView"
+                                    Width="250"
+                                    Height="250"
+                                    Margin="5"
+                                    DefaultBackgroundColor="Transparent"
+                                    Loaded="WebView_Loaded"
+                                    NavigationCompleted="WebView_NavigationCompleted"
+                                    Unloaded="WebView_Unloaded" />
+                            </Border>
+                            <ui:Button
+                                x:Name="DeleteButton"
+                                Width="40"
+                                Height="40"
+                                Margin="20"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Panel.ZIndex="10"
+                                Background="#312f45"
+                                Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Icon="{ui:SymbolIcon Symbol=Delete48}"
+                                Visibility="Collapsed" />
+                        </Grid>
+                        <StackPanel
                             x:Name="AlbumInfoPanel"
+                            Grid.Row="1"
                             VerticalAlignment="Bottom"
-                            Margin="0,250,0,0"
-                            Visibility="Hidden">
-                            <TextBlock 
-                                Text="{Binding Name}" 
+                            Visibility="Collapsed">
+                            <TextBlock
                                 FontWeight="Bold"
-                                TextTrimming="CharacterEllipsis"/>
+                                Text="{Binding Name}"
+                                TextTrimming="CharacterEllipsis" />
 
-                            <!--<TextBlock 
-                                Text="{Binding Photos.Count, StringFormat='{}Фото: {0}'}" 
+                            <!--<TextBlock
+                                Text="{Binding Photos.Count, StringFormat='{}Фото: {0}'}"
                                 Foreground="Gray"/>-->
                         </StackPanel>
                     </Grid>
