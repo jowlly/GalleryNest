@@ -3,8 +3,12 @@ using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
+using System.Drawing.Printing;
 using System.Windows.Input;
 using Wpf.Ui.Input;
+using System.Linq;
+using GalleryNestServer.Entities;
+using Photo = GalleryNestApp.Model.Photo;
 
 namespace GalleryNestApp.ViewModel
 {
@@ -17,9 +21,43 @@ namespace GalleryNestApp.ViewModel
         private ObservableCollection<Photo> _photos = [];
         private ObservableCollection<int> _photoIds = [];
         private Photo? _selectedPhoto = null;
+        private const int PageSize = 3;
+        private int _currentPage = 1;
+        private int _totalPages = 10;
+        private bool _isLoading = false;
         #endregion
 
         #region Properties
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                _currentPage = value;
+                OnPropertyChanged(nameof(CurrentPage));
+            }
+        }
+
+        public int TotalPages
+        {
+            get => _totalPages;
+            set
+            {
+                _totalPages = value;
+                OnPropertyChanged(nameof(TotalPages));
+            }
+        }
+
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                _isLoading = value;
+                OnPropertyChanged(nameof(IsLoading));
+            }
+        }
+
         public ObservableCollection<Photo> Photos
         {
             get => _photos;
@@ -48,32 +86,57 @@ namespace GalleryNestApp.ViewModel
                 OnPropertyChanged(nameof(SelectedPhoto));
             }
         }
-        private RelayCommand? loadDataCommand;
         #endregion
 
         public PhotoViewModel(PhotoService photoService)
         {
             PhotoService = photoService;
-            loadDataCommand = new RelayCommand(async _ => await LoadDataAsync());
-            loadDataCommand.Execute(null);
+            Task.Run(async () =>
+            {
+                await LoadDataAsync(pageSize: 9);
+                CurrentPage = 3;
+            });
         }
 
-        private async Task LoadDataAsync()
+        private async Task LoadDataAsync(bool reset = false,int pageSize = PageSize)
         {
-            var photos = await PhotoService.GetAllAsync();
-            PhotoIds = [.. photos.Select(x => x.Id)];
+            if (IsLoading) return;
+            IsLoading = true;
+
+            try
+            {
+                if (reset) CurrentPage = 1;
+
+                var pagedResult = await PhotoService.GetPagedAsync(CurrentPage, pageSize);
+
+                if (reset) PhotoIds.Clear();
+                foreach (var photo in from photo in pagedResult
+                                      where !PhotoIds.Contains(photo.Id)
+                                      select photo)
+                {
+                    PhotoIds.Add(photo.Id);
+                }
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         #region Commands
-        private RelayCommand? loadPhotoCommand = null;
-        public RelayCommand LoadPhotoCommand => loadPhotoCommand ??= new RelayCommand(obj =>
+        public ICommand LoadNextPageCommand => new RelayCommand(async _ =>
         {
-            Task.Run(async () =>
+            if (CurrentPage < TotalPages && !IsLoading)
             {
-                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
-            }).Wait();
+                CurrentPage++;
+                await LoadDataAsync();
+            }
+        });
 
-
+        private RelayCommand? loadPhotoCommand = null;
+        public RelayCommand LoadPhotoCommand => loadPhotoCommand ??= new RelayCommand(async obj =>
+        {
+            await LoadDataAsync(true);
         }
         );
         public ICommand LoadImageCommand => new RelayCommand<object>(param =>
@@ -84,35 +147,26 @@ namespace GalleryNestApp.ViewModel
             }
         });
         private RelayCommand? addPhotoCommand = null;
-        public RelayCommand AddPhotoCommand => addPhotoCommand ??= new RelayCommand(obj =>
+        public RelayCommand AddPhotoCommand => addPhotoCommand ??= new RelayCommand(async obj =>
         {
-            Task.Run(async () =>
+            await PhotoService.AddAsync(new Photo()
             {
-                await PhotoService.AddAsync(new Photo()
-                {
-                    Id = 0,
-                    AlbumId = 1
-                });
+                Id = 0,
+            });
 
-                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
-            }).Wait();
-
+            await LoadDataAsync();
         }
         );
 
         private RelayCommand? editPhotoCommand = null;
-        public RelayCommand EditPhotoCommand => editPhotoCommand ??= new RelayCommand(obj =>
+        public RelayCommand EditPhotoCommand => editPhotoCommand ??= new RelayCommand(async obj =>
         {
-            Task.Run(async () =>
-            {
-                await PhotoService.EditAsync(
+            await PhotoService.EditAsync(
                         new Photo()
                         {
                             Id = 0,
                         });
-
-                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
-            }).Wait();
+            await LoadDataAsync();
         }
         );
 
@@ -123,7 +177,7 @@ namespace GalleryNestApp.ViewModel
             {
                 await PhotoService.DeleteAsync((new[] { photoId }).ToList());
 
-                PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
+                await LoadDataAsync();
             }
         });
 
@@ -142,9 +196,7 @@ namespace GalleryNestApp.ViewModel
             {
                 await PhotoService.UploadFile(fileName);
             }
-            var updatedPhotos = await PhotoService.GetAllAsync();
-
-            PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
+            await LoadDataAsync();
         }
     }
 }

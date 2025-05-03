@@ -13,13 +13,12 @@
     mc:Ignorable="d">
     <Grid>
         <local:PhotoGalleryControl
-            ItemsSource="{Binding Albums}"
-            ShowAlbumInfo="True"
             DeleteCommand="{Binding DeleteAlbumCommand}"
-            LoadImageCommand="{Binding LoadImageCommand}"
             ItemClickCommand="{Binding OpenAlbumCommand}"
-            WebView2EnvironmentProvider="{Binding WebView2Provider, 
-                RelativeSource={RelativeSource AncestorType=Page}}"/>
+            ItemsSource="{Binding Albums}"
+            LoadImageCommand="{Binding LoadImageCommand}"
+            ShowAlbumInfo="True"
+            WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
         <StackPanel
             Margin="20"
             HorizontalAlignment="Right"

@@ -17,7 +17,6 @@ namespace GalleryNestApp
         public MainWindow()
         {
             InitializeComponent();
-
             var services = new ServiceCollection();
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
@@ -84,6 +83,7 @@ namespace GalleryNestApp
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
             => NavigationService.NavigateTo<UpdatesPage>();
+
     }
 
 }

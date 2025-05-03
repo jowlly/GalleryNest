@@ -1,5 +1,6 @@
 ﻿using GalleryNestServer.Data;
 using GalleryNestServer.Entities;
+using GalleryNestServer.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GalleryNestServer.Controllers
@@ -11,9 +12,13 @@ namespace GalleryNestServer.Controllers
         private readonly EntityRepository<Album> _repository = repository;
 
         [HttpGet]
-        public ActionResult<IEnumerable<Album>> GetAll()
+        public ActionResult<IEnumerable<Album>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var products = _repository.GetAll();
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var products = _repository.GetPaged(pageNumber, pageSize);
             return Ok(products);
         }
         [HttpGet("{id}")]

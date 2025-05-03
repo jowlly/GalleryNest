@@ -2,10 +2,12 @@
 using GalleryNestApp.Service;
 using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
+using GalleryNestServer.Entities;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Wpf.Ui.Input;
+using Album = GalleryNestApp.Model.Album;
 
 namespace GalleryNestApp.ViewModel
 {
@@ -21,9 +23,42 @@ namespace GalleryNestApp.ViewModel
         private readonly INavigationService _navigationService;
 
         public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
+        private const int PageSize = 3;
+        private int _currentPage = 1;
+        private int _totalPages = 10;
+        private bool _isLoading = false;
         #endregion
 
         #region Properties
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                _currentPage = value;
+                OnPropertyChanged(nameof(CurrentPage));
+            }
+        }
+
+        public int TotalPages
+        {
+            get => _totalPages;
+            set
+            {
+                _totalPages = value;
+                OnPropertyChanged(nameof(TotalPages));
+            }
+        }
+
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                _isLoading = value;
+                OnPropertyChanged(nameof(IsLoading));
+            }
+        }
         public ObservableCollection<Album> Albums
         {
             get => _albums;
@@ -68,10 +103,48 @@ namespace GalleryNestApp.ViewModel
             _albumService = albumService;
             _photoService = photoService;
             _navigationService = navigationService;
-            Albums = [.. Task.Run(() => _albumService.GetAllAsync()).Result];
+            Task.Run(async () =>
+            {
+                await LoadDataAsync(pageSize: 9);
+                CurrentPage = 3;
+            });
+        }
+
+        private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
+        {
+            if (IsLoading) return;
+            IsLoading = true;
+
+            try
+            {
+                if (reset) CurrentPage = 1;
+
+                var pagedResult = await _albumService.GetPagedAsync(CurrentPage, pageSize);
+
+                if (reset) Albums.Clear();
+                foreach (var album in from album in pagedResult
+                                      where !Albums.Select(x=>x.Id).ToList().Contains(album.Id)
+                                      select album)
+                {
+                    Albums.Add(album);
+                }
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         #region Commands
+        public ICommand LoadNextPageCommand => new RelayCommand(async _ =>
+        {
+            if (CurrentPage < TotalPages && !IsLoading)
+            {
+                CurrentPage++;
+                await LoadDataAsync();
+            }
+        });
+
         public ICommand LoadImageCommand => new RelayCommand<object>(param =>
         {
             if (param != null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is Album album)
@@ -87,76 +160,61 @@ namespace GalleryNestApp.ViewModel
 
         public ICommand OpenAlbumCommand => new RelayCommand<object>(param =>
         {
-            if(param is Album)
+            if (param is Album)
                 _navigationService.NavigateTo<AlbumGalleryPage>((param as Album)!.Id);
         });
 
 
         private RelayCommand? loadAlbumsCommand = null;
-        public RelayCommand LoadAlbumsCommand => loadAlbumsCommand ??= new RelayCommand(obj =>
+        public RelayCommand LoadAlbumsCommand => loadAlbumsCommand ??= new RelayCommand(async obj =>
         {
-            Task.Run(async () =>
-            {
-                Albums = [.. await _albumService.GetAllAsync()];
-            }).Wait();
-
+            await LoadDataAsync(true);
         }
         );
 
-        private RelayCommand? loadPhotosForAlbumCommand = null;
-        public RelayCommand LoadPhotosForAlbumCommand => loadPhotosForAlbumCommand ??= new RelayCommand(obj =>
-        {
-            Task.Run(async () =>
-            {
-                PhotoIds = [.. (await _photoService.LoadPhotosForAlbum(SelectedAlbum.Id,1,10)).Select(x => x.Id)];
-            }).Wait();
+        //private RelayCommand? loadPhotosForAlbumCommand = null;
+        //public RelayCommand LoadPhotosForAlbumCommand => loadPhotosForAlbumCommand ??= new RelayCommand(obj =>
+        //{
+        //    Task.Run(async () =>
+        //    {
+        //        PhotoIds = [.. (await _photoService.LoadPhotosForAlbum(SelectedAlbum.Id,1,10)).Select(x => x.Id)];
+        //    }).Wait();
 
-        }
-        );
+        //}
+        //);
 
         private RelayCommand? addAlbumCommand = null;
-        public RelayCommand AddAlbumCommand => addAlbumCommand ??= new RelayCommand(obj =>
+        public RelayCommand AddAlbumCommand => addAlbumCommand ??= new RelayCommand(async obj =>
             {
-                Task.Run(async () =>
+                await _albumService.AddAsync(new Album()
                 {
-                    await _albumService.AddAsync(new Album()
-                    {
-                        Name = AlbumName
-                    });
-
-                    Albums = [.. await _albumService.GetAllAsync()];
-                }).Wait();
-
+                    Name = AlbumName
+                });
+                await LoadDataAsync();
             }
         );
 
         private RelayCommand? editAlbumCommand = null;
-        public RelayCommand EditAlbumCommand => editAlbumCommand ??= new RelayCommand(obj =>
+        public RelayCommand EditAlbumCommand => editAlbumCommand ??= new RelayCommand(async obj =>
         {
-            Task.Run(async () =>
-            {
-                await _albumService.EditAsync(
+            await _albumService.EditAsync(
                         new Album()
                         {
                             Id = 0,
                             Name = AlbumName
                         });
 
-                Albums = [.. await _albumService.GetAllAsync()];
-            }).Wait();
+            await LoadDataAsync();
         }
         );
 
         private RelayCommand? deleteAlbumCommand = null;
-        public RelayCommand DeleteAlbumCommand => deleteAlbumCommand ??= new RelayCommand(obj =>
+        public RelayCommand DeleteAlbumCommand => deleteAlbumCommand ??= new RelayCommand(async obj =>
         {
-            Task.Run(async () =>
-            {
-                await _albumService.DeleteAsync(
+            await _albumService.DeleteAsync(
                     [SelectedAlbum.Id]);
 
-                Albums = [.. await _albumService.GetAllAsync()];
-            }).Wait();
+            await LoadDataAsync();
         }
         );
 
@@ -167,15 +225,5 @@ namespace GalleryNestApp.ViewModel
             PhotoService.LoadAlbumPreviewWebView(webView, albumId);
         }
 
-        public async Task UploadFile(List<string> fileNames)
-        {
-            foreach (var fileName in fileNames)
-            {
-                await PhotoService.UploadFile(fileName);
-            }
-            var updatedPhotos = await PhotoService.GetAllAsync();
-
-            PhotoIds = [.. (await PhotoService.GetAllAsync()).Select(x => x.Id)];
-        }
     }
 }

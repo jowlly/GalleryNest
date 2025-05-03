@@ -52,7 +52,7 @@ namespace GalleryNestApp.Service
         {
             var uriBuilder = new UriBuilder($"{_url}");
             var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
-            query["page"] = page.ToString();
+            query["pageNumber"] = page.ToString();
             query["pageSize"] = pageSize.ToString();
             uriBuilder.Query = query.ToString();
 

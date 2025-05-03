@@ -116,7 +116,7 @@ namespace GalleryNestApp.Service
             var uriBuilder = new UriBuilder($"{url}/photo/meta/album");
             var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
             query["albumId"] = albumId.ToString();
-            query["page"] = page.ToString();
+            query["pageNumber"] = page.ToString();
             query["pageSize"] = pageSize.ToString();
             uriBuilder.Query = query.ToString();
 

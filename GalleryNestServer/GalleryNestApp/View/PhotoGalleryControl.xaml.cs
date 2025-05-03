@@ -192,12 +192,14 @@ namespace GalleryNestApp.View
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             var scrollViewer = (ScrollViewer)sender;
-            var threshold = 0.95; 
-
-            if (scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight * threshold &&
-                DataContext is PhotoViewModel viewModel)
+            if (scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight * 0.95)
             {
-                viewModel.LoadNextPageCommand.Execute(null);
+                if (DataContext is PhotoViewModel)
+                    (DataContext as PhotoViewModel)!.LoadNextPageCommand.Execute(null);
+                if (DataContext is AlbumGalleryViewModel)
+                    (DataContext as AlbumGalleryViewModel)!.LoadNextPageCommand.Execute(null);
+                if (DataContext is AlbumViewModel)
+                    (DataContext as AlbumViewModel)!.LoadNextPageCommand.Execute(null);
             }
         }
     }
