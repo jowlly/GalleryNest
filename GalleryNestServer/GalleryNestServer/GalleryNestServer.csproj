@@ -16,10 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FaceONNX" Version="4.0.4.2" />
     <PackageReference Include="LiteDB" Version="5.0.21" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.0-preview.3.25171.5" />
+    <PackageReference Include="YoloDotNet" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>

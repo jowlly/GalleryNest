@@ -1,6 +1,7 @@
 ﻿using GalleryNestServer.Data;
 using GalleryNestServer.Entities;
 using GalleryNestServer.Repositories;
+using GalleryNestServer.Services;
 using LiteDB;
 
 namespace GalleryNestServer
@@ -18,6 +19,9 @@ namespace GalleryNestServer
             var database = new LiteDatabase(connectionString);
             services.AddSingleton(new PhotoRepository(database, "photos"));
             services.AddSingleton(new EntityRepository<Album>(database, "albums"));
+
+            services.AddSingleton<IFaceService, FaceONNXService>();
+            services.AddSingleton<IObjectDetector, YoloCategoryDetector>();
 
             services.AddControllers();
             services.AddEndpointsApiExplorer();

@@ -2,12 +2,7 @@
 using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Wpf.Ui.Input;
 
@@ -116,7 +111,7 @@ namespace GalleryNestApp.ViewModel
             //});
         }
 
-        private async Task LoadDataAsync(bool reset = false, int pageSize=PageSize)
+        private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
         {
             if (IsLoading) return;
             IsLoading = true;

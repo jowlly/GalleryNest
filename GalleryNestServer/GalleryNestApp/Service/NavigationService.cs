@@ -15,7 +15,7 @@ namespace GalleryNestApp.Service
         }
 
         public void NavigateTo<T>(object? parameter = null) where T : Page
-            => NavigateTo(typeof(T),parameter);
+            => NavigateTo(typeof(T), parameter);
 
         public void NavigateTo(Type pageType, object? parameter = null)
         {

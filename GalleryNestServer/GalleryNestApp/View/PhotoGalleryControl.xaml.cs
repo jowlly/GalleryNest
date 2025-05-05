@@ -1,5 +1,4 @@
-﻿using GalleryNestApp.Model;
-using GalleryNestApp.Service;
+﻿using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -177,7 +176,7 @@ namespace GalleryNestApp.View
                 {
                     indicator.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
                     deleteButton.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
-                    if(ShowAlbumInfo)   
+                    if (ShowAlbumInfo)
                         albumInfo.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
                 }, DispatcherPriority.ContextIdle);
             }

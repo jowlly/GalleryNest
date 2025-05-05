@@ -1,7 +1,6 @@
 ﻿using GalleryNestApp.Model;
 using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel;
-using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
 using System.Windows.Controls;

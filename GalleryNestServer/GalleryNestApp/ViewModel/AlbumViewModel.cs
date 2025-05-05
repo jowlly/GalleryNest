@@ -1,8 +1,6 @@
-﻿using GalleryNestApp.Model;
-using GalleryNestApp.Service;
+﻿using GalleryNestApp.Service;
 using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
-using GalleryNestServer.Entities;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -123,7 +121,7 @@ namespace GalleryNestApp.ViewModel
 
                 if (reset) Albums.Clear();
                 foreach (var album in from album in pagedResult
-                                      where !Albums.Select(x=>x.Id).ToList().Contains(album.Id)
+                                      where !Albums.Select(x => x.Id).ToList().Contains(album.Id)
                                       select album)
                 {
                     Albums.Add(album);

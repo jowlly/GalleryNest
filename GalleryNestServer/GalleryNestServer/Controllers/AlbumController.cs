@@ -1,6 +1,5 @@
 ﻿using GalleryNestServer.Data;
 using GalleryNestServer.Entities;
-using GalleryNestServer.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GalleryNestServer.Controllers

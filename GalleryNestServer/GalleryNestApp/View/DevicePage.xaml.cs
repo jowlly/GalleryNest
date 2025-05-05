@@ -1,6 +1,5 @@
 ﻿using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel;
-using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,7 +14,7 @@ namespace GalleryNestApp.View
         private DeviceViewModel deviceViewModel;
         private WebView2Provider provider;
 
-        public DevicePage(DeviceViewModel deviceViewModel,WebView2Provider provider)
+        public DevicePage(DeviceViewModel deviceViewModel, WebView2Provider provider)
         {
             InitializeComponent();
             this.deviceViewModel = deviceViewModel;
