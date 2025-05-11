@@ -56,9 +56,6 @@ namespace GalleryNestServer.Controllers
                     await file.CopyToAsync(stream);
                     stream.Position = 0;
 
-                    var detection = await _detector.DetectCategoriesAsync(stream);
-                    //var hasPeople = detection["люди"] < 0.5f;
-                    var hasPeople = true;
 
                     stream.Position = 0;
                     using var image = Image.FromStream(stream);
@@ -66,17 +63,13 @@ namespace GalleryNestServer.Controllers
                     var faceResult = new FaceProcessingResult
                     {
                         FileName = file.FileName,
-                        IsHuman = hasPeople,
                         Embeddings = new List<float[]>()
                     };
 
-                    if (hasPeople)
+                    var embeddings = _faceService.GetFaceEmbedding(image);
+                    if (embeddings != null)
                     {
-                        var embeddings = _faceService.GetFaceEmbedding(image);
-                        if (embeddings != null)
-                        {
-                            faceResult.Embeddings.Add(embeddings);
-                        }
+                        faceResult.Embeddings.Add(embeddings);
                     }
 
                     results.Add(faceResult);

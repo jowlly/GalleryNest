@@ -2,6 +2,9 @@
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Globalization;
+using System.Windows.Data;
 using System.Windows.Input;
 using Wpf.Ui.Input;
 using Photo = GalleryNestApp.Model.Photo;
@@ -16,6 +19,9 @@ namespace GalleryNestApp.ViewModel
 
         private ObservableCollection<Photo> _photos = [];
         private ObservableCollection<int> _photoIds = [];
+
+        private ICollectionView _groupedPhotos;
+
         private Photo? _selectedPhoto = null;
         private const int PageSize = 3;
         private int _currentPage = 1;
@@ -73,6 +79,16 @@ namespace GalleryNestApp.ViewModel
             }
         }
 
+        public ICollectionView GroupedPhotos
+        {
+            get => _groupedPhotos;
+            set
+            {
+                _groupedPhotos = value;
+                OnPropertyChanged(nameof(GroupedPhotos));
+            }
+        }
+
         public Photo SelectedPhoto
         {
             get => _selectedPhoto ?? new Photo();
@@ -87,6 +103,9 @@ namespace GalleryNestApp.ViewModel
         public PhotoViewModel(PhotoService photoService)
         {
             PhotoService = photoService;
+            GroupedPhotos = CollectionViewSource.GetDefaultView(Photos);
+            GroupedPhotos.GroupDescriptions.Add(new PropertyGroupDescription("CreatedAt", new DateTimeToDateConverter()));
+            GroupedPhotos.SortDescriptions.Add(new SortDescription("CreatedAt", ListSortDirection.Descending));
             Task.Run(async () =>
             {
                 await LoadDataAsync(pageSize: 9);
@@ -110,7 +129,7 @@ namespace GalleryNestApp.ViewModel
                                       where !PhotoIds.Contains(photo.Id)
                                       select photo)
                 {
-                    PhotoIds.Add(photo.Id);
+                    Photos.Add(photo);
                 }
             }
             finally
@@ -137,9 +156,9 @@ namespace GalleryNestApp.ViewModel
         );
         public ICommand LoadImageCommand => new RelayCommand<object>(param =>
         {
-            if (param != null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is int photoId)
+            if (param != null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is Photo photo)
             {
-                LoadImageToWebView((param as WebView2CompositionControl)!, photoId.ToString());
+                LoadImageToWebView((param as WebView2CompositionControl)!, photo.Id.ToString());
             }
         });
         private RelayCommand? addPhotoCommand = null;
@@ -193,6 +212,18 @@ namespace GalleryNestApp.ViewModel
                 await PhotoService.UploadFile(fileName);
             }
             await LoadDataAsync();
+        }
+    }
+    public class DateTimeToDateConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is DateTime date ? date.Date : value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }
