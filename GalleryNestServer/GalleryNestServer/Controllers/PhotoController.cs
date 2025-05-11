@@ -98,29 +98,44 @@ namespace GalleryNestServer.Controllers
             return NoContent();
         }
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadPhoto([FromForm] IFormFile file, [FromQuery] int albumId)
+        public async Task<IActionResult> UploadPhoto(
+            [FromForm] IFormFile file,
+            [FromForm] DateTime creationTime,
+            [FromQuery] int albumId)
         {
             if (file == null || file.Length == 0)
             {
                 return BadRequest("No file uploaded.");
             }
 
-            string fileName = Path.GetFileName(file.FileName);
-            string fileExtension = Path.GetExtension(file.FileName);
+            if (creationTime == default)
+            {
+                return BadRequest("Creation time is required.");
+            }
 
+            string fileName = Path.GetFileName(file.FileName);
             string uploadPath = Path.Combine(PhotoStoragePath, fileName);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(uploadPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(uploadPath)!);
 
             using (var fileStream = new FileStream(uploadPath, FileMode.Create))
             {
                 await file.CopyToAsync(fileStream);
             }
 
-            _photoRepository.Set([new Photo() { Path = uploadPath, AlbumId = albumId }]);
+            _photoRepository.Set(new[]
+            {
+                new Photo()
+                {
+                    Path = uploadPath,
+                    AlbumId = albumId,
+                    CreationTime = creationTime
+                }
+            });
 
             return Ok(new { FilePath = uploadPath });
         }
+
 
         [HttpGet("download")]
         public IActionResult DownloadPhoto([FromQuery] int photoId)

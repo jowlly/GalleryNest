@@ -103,14 +103,19 @@ namespace GalleryNestApp.ViewModel
         public PhotoViewModel(PhotoService photoService)
         {
             PhotoService = photoService;
-            GroupedPhotos = CollectionViewSource.GetDefaultView(Photos);
-            GroupedPhotos.GroupDescriptions.Add(new PropertyGroupDescription("CreatedAt", new DateTimeToDateConverter()));
-            GroupedPhotos.SortDescriptions.Add(new SortDescription("CreatedAt", ListSortDirection.Descending));
             Task.Run(async () =>
             {
+                InitGroups();
                 await LoadDataAsync(pageSize: 9);
                 CurrentPage = 3;
-            });
+            }).Wait();
+        }
+
+        private void InitGroups()
+        {
+            GroupedPhotos = CollectionViewSource.GetDefaultView(Photos);
+            GroupedPhotos.GroupDescriptions.Add(new PropertyGroupDescription("CreationTime", new DateTimeToDateConverter()));
+            GroupedPhotos.SortDescriptions.Add(new SortDescription("CreationTime", ListSortDirection.Descending));
         }
 
         private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
@@ -124,9 +129,9 @@ namespace GalleryNestApp.ViewModel
 
                 var pagedResult = await PhotoService.GetPagedAsync(CurrentPage, pageSize);
 
-                if (reset) PhotoIds.Clear();
+                if (reset) Photos.Clear();
                 foreach (var photo in from photo in pagedResult
-                                      where !PhotoIds.Contains(photo.Id)
+                                      where !Photos.Contains(photo)
                                       select photo)
                 {
                     Photos.Add(photo);
@@ -135,6 +140,7 @@ namespace GalleryNestApp.ViewModel
             finally
             {
                 IsLoading = false;
+                //GroupedPhotos.Refresh();
             }
         }
 

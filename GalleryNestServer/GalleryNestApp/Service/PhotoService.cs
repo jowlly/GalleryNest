@@ -1,8 +1,11 @@
 ﻿using GalleryNestApp.Model;
 using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 
 namespace GalleryNestApp.Service
 {
@@ -94,13 +97,36 @@ namespace GalleryNestApp.Service
             }
         }
 
+        //public async Task UploadFile(string filePath, int albumId = 1)
+        //{
+        //    using var fileStream = File.OpenRead(filePath);
+        //    var fileName = System.IO.Path.GetFileName(filePath);
+
+        //    using var content = new MultipartFormDataContent();
+        //    content.Add(new StreamContent(fileStream), "file", fileName);
+
+        //    var response = await client.PostAsync($"{url}/photo/upload?albumId={albumId}", content);
+
+        //    if (!response.IsSuccessStatusCode)
+        //    {
+        //        var error = await response.Content.ReadAsStringAsync();
+        //        throw new Exception($"Server error: {error}");
+        //    }
+        //}
+
         public async Task UploadFile(string filePath, int albumId = 1)
         {
-            using var fileStream = File.OpenRead(filePath);
-            var fileName = System.IO.Path.GetFileName(filePath);
+            var fileInfo = new FileInfo(filePath);
+            var creationTime = GetFileCreationTime(fileInfo);
 
-            using var content = new MultipartFormDataContent();
-            content.Add(new StreamContent(fileStream), "file", fileName);
+            using var fileStream = File.OpenRead(filePath);
+            var fileName = Path.GetFileName(filePath);
+
+            using var content = new MultipartFormDataContent
+            {
+                { new StreamContent(fileStream), "file", fileName },
+                { new StringContent(creationTime.ToString("o")), "creationTime" }
+            };
 
             var response = await client.PostAsync($"{url}/photo/upload?albumId={albumId}", content);
 
@@ -109,6 +135,28 @@ namespace GalleryNestApp.Service
                 var error = await response.Content.ReadAsStringAsync();
                 throw new Exception($"Server error: {error}");
             }
+        }
+
+        private DateTime GetFileCreationTime(FileInfo fileInfo)
+        {
+            try
+            {
+                using var image = Image.FromFile(fileInfo.FullName);
+                var propItem = image.GetPropertyItem(36867);
+                if (propItem != null)
+                {
+                    var dateString = Encoding.UTF8.GetString(propItem.Value).Trim('\0');
+                    if (DateTime.TryParseExact(dateString, "yyyy:MM:dd HH:mm:ss",
+                        CultureInfo.InvariantCulture, DateTimeStyles.None, out var exifDate))
+                    {
+                        return exifDate.ToUniversalTime();
+                    }
+                }
+            }
+            catch {}
+            return new[] { fileInfo.CreationTimeUtc, fileInfo.LastWriteTimeUtc }
+                .OrderBy(t => t)
+                .First();
         }
 
         public async Task<IEnumerable<Photo>> LoadPhotosForAlbum(int albumId, int page, int pageSize)
