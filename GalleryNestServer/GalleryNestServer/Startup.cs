@@ -3,6 +3,7 @@ using GalleryNestServer.Entities;
 using GalleryNestServer.Repositories;
 using GalleryNestServer.Services;
 using LiteDB;
+using System.Collections.ObjectModel;
 
 namespace GalleryNestServer
 {
@@ -19,6 +20,8 @@ namespace GalleryNestServer
             var database = new LiteDatabase(connectionString);
             services.AddSingleton(new PhotoRepository(database, "photos"));
             services.AddSingleton(new EntityRepository<Album>(database, "albums"));
+            services.AddSingleton(new PersonRepository(database, "persons"));
+            services.AddSingleton(new EntityRepository<Selection>(database, "selections"));
 
             services.AddSingleton<IFaceService, FaceONNXService>();
             services.AddSingleton<IObjectDetector, YoloCategoryDetector>();

@@ -1,6 +1,7 @@
 ﻿using GalleryNestServer.Data;
 using GalleryNestServer.Entities;
 using LiteDB;
+using System.Linq;
 
 namespace GalleryNestServer.Repositories
 {
@@ -8,18 +9,40 @@ namespace GalleryNestServer.Repositories
     {
         public PhotoRepository(LiteDatabase database, string collectionName) : base(database, collectionName)
         {
-            _collection.EnsureIndex(x => x.AlbumId);
+            _collection.EnsureIndex(x => x.AlbumIds);
+            _collection.EnsureIndex(x => x.SelectionIds);
+            _collection.EnsureIndex(x => x.PersonIds);
+            _collection.EnsureIndex(x => x.Guid);
         }
         public Photo? GetLatestByAlbumId(int albumId)
         {
-            return _collection.Find(entity => entity.AlbumId == albumId)
+            return _collection.Find(entity => entity.AlbumIds.Contains(albumId))
+                               .OrderByDescending(x => x.CreatedAt)
+                               .FirstOrDefault();
+        }
+        public Photo GetByGuid(string guid)
+        {
+            return _collection.FindOne(x => x.Guid == guid);
+        }
+
+        public IEnumerable<Photo> GetByAlbumId(int selectionId, int pageNumber, int pageSize)
+        {
+            return _collection.Find(entity => entity.AlbumIds.Contains(selectionId))
+                              .OrderByDescending(x => x.CreatedAt)
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize);
+        }
+
+        public Photo? GetLatestBySelectionId(int selectionId)
+        {
+            return _collection.Find(entity => entity.SelectionIds.Contains(selectionId))
                                .OrderByDescending(x => x.CreatedAt)
                                .FirstOrDefault();
         }
 
-        public IEnumerable<Photo> GetByAlbumId(int albumId, int pageNumber, int pageSize)
+        public IEnumerable<Photo> GetBySelectionId(int selectionId, int pageNumber, int pageSize)
         {
-            return _collection.Find(entity => entity.AlbumId == albumId)
+            return _collection.Find(entity => entity.SelectionIds.Contains(selectionId))
                               .OrderByDescending(x => x.CreatedAt)
                               .Skip((pageNumber - 1) * pageSize)
                               .Take(pageSize);
@@ -39,6 +62,21 @@ namespace GalleryNestServer.Repositories
                               .OrderByDescending(x => x.CreatedAt)
                               .Skip((pageNumber - 1) * pageSize)
                               .Take(pageSize);
+        }
+
+        public IEnumerable<Photo> GetByPersonGuid(string personId, int pageNumber, int pageSize)
+        {
+            return _collection.Find(entity => entity.PersonIds.Contains(personId))
+                              .OrderByDescending(x => x.CreatedAt)
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize);
+        }
+
+        public Photo? GetLatestByPersonGuid(string personId)
+        {
+            return _collection.Find(entity => entity.PersonIds.Contains(personId))
+                               .OrderByDescending(x => x.CreatedAt)
+                               .FirstOrDefault();
         }
     }
 }

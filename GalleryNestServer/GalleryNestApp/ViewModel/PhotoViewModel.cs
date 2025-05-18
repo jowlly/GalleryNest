@@ -103,12 +103,9 @@ namespace GalleryNestApp.ViewModel
         public PhotoViewModel(PhotoService photoService)
         {
             PhotoService = photoService;
-            Task.Run(async () =>
-            {
-                InitGroups();
-                await LoadDataAsync(pageSize: 9);
-                CurrentPage = 3;
-            }).Wait();
+            InitGroups();
+            LoadDataAsync(pageSize: 9);
+            CurrentPage = 3;
         }
 
         private void InitGroups()
@@ -118,7 +115,7 @@ namespace GalleryNestApp.ViewModel
             GroupedPhotos.SortDescriptions.Add(new SortDescription("CreationTime", ListSortDirection.Descending));
         }
 
-        private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
+        private void LoadDataAsync(bool reset = false, int pageSize = PageSize)
         {
             if (IsLoading) return;
             IsLoading = true;
@@ -126,8 +123,10 @@ namespace GalleryNestApp.ViewModel
             try
             {
                 if (reset) CurrentPage = 1;
-
-                var pagedResult = await PhotoService.GetPagedAsync(CurrentPage, pageSize);
+                var pagedResult = Task.Run(() =>
+                {
+                    return PhotoService.GetPagedAsync(CurrentPage, pageSize);
+                }).Result;
 
                 if (reset) Photos.Clear();
                 foreach (var photo in from photo in pagedResult
@@ -140,7 +139,6 @@ namespace GalleryNestApp.ViewModel
             finally
             {
                 IsLoading = false;
-                //GroupedPhotos.Refresh();
             }
         }
 
@@ -150,14 +148,14 @@ namespace GalleryNestApp.ViewModel
             if (CurrentPage < TotalPages && !IsLoading)
             {
                 CurrentPage++;
-                await LoadDataAsync();
+                LoadDataAsync();
             }
         });
 
         private RelayCommand? loadPhotoCommand = null;
         public RelayCommand LoadPhotoCommand => loadPhotoCommand ??= new RelayCommand(async obj =>
         {
-            await LoadDataAsync(true);
+            LoadDataAsync(true);
         }
         );
         public ICommand LoadImageCommand => new RelayCommand<object>(param =>
@@ -175,7 +173,7 @@ namespace GalleryNestApp.ViewModel
                 Id = 0,
             });
 
-            await LoadDataAsync();
+            LoadDataAsync();
         }
         );
 
@@ -187,7 +185,7 @@ namespace GalleryNestApp.ViewModel
                         {
                             Id = 0,
                         });
-            await LoadDataAsync();
+            LoadDataAsync();
         }
         );
 
@@ -198,7 +196,7 @@ namespace GalleryNestApp.ViewModel
             {
                 await PhotoService.DeleteAsync((new[] { photoId }).ToList());
 
-                await LoadDataAsync();
+                LoadDataAsync();
             }
         });
 
@@ -217,7 +215,7 @@ namespace GalleryNestApp.ViewModel
             {
                 await PhotoService.UploadFile(fileName);
             }
-            await LoadDataAsync();
+            LoadDataAsync();
         }
     }
     public class DateTimeToDateConverter : IValueConverter

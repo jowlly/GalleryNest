@@ -18,7 +18,7 @@ namespace GalleryNestServer.Services
         {
             var yoloConfig = new YoloOptions
             {
-                OnnxModel = config["MLModels:YoloModelPath"],
+                OnnxModel = config["MLModels:YoloModelPath"]!,
                 Cuda = false,
                 ModelType = YoloDotNet.Enums.ModelType.ObjectDetection,
             };
@@ -27,13 +27,13 @@ namespace GalleryNestServer.Services
 
             _yoloC = new Yolo(new YoloOptions
             {
-                OnnxModel = config["MLModels:YoloCModelPath"],
+                OnnxModel = config["MLModels:YoloCModelPath"]!,
                 Cuda = false,
                 ModelType = YoloDotNet.Enums.ModelType.Classification,
             });
 
             _categoryMapping = config.GetSection("MLModels:ClassMapping")
-                .Get<Dictionary<string, List<string>>>()
+                .Get<Dictionary<string, List<string>>>()!
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
@@ -45,11 +45,7 @@ namespace GalleryNestServer.Services
                 using var imageSharp = await Image.LoadAsync(imageStream);
                 using var skImage = ConvertToSkiaImage(imageSharp);
                 var results = _yolo.RunObjectDetection(skImage);
-                Console.WriteLine(_yoloC.OnnxModel.Labels);
-                var clas = _yoloC.RunClassification(skImage);
-                var dict = new Dictionary<string, float>();
-                dict[clas.First().Label] = (float)clas.First().Confidence;
-                return dict;
+                return CalculateCategoryScores(results.Select(x=>new ClassificationResult {Confidence = x.Confidence, Label = x.Label.Name}));
             }
             finally
             {
@@ -57,16 +53,29 @@ namespace GalleryNestServer.Services
             }
         }
 
-        private SKImage ConvertToSkiaImage(Image imageSharp)
+        public async Task<Dictionary<string, float>> ClassifyCategoriesAsync(Stream imageStream)
         {
-            using var memoryStream = new MemoryStream();
-            imageSharp.Save(memoryStream, new PngEncoder());
-            memoryStream.Position = 0;
-
-            return SKImage.FromEncodedData(memoryStream);
+            await _semaphore.WaitAsync();
+            try
+            {
+                using var imageSharp = await Image.LoadAsync(imageStream);
+                using var skImage = ConvertToSkiaImage(imageSharp);
+                var classes = _yoloC.RunClassification(skImage);
+                return CalculateCategoryScores(classes.Select(x => new ClassificationResult { Confidence = x.Confidence, Label = x.Label }));
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
-        private Dictionary<string, float> CalculateCategoryScores(IEnumerable<Classification> results)
+        public class ClassificationResult
+        {
+            public string Label { get; set; }
+            public double Confidence { get; set; }
+        }
+
+        private Dictionary<string, float> CalculateCategoryScores(IEnumerable<ClassificationResult> results)
         {
             var categoryScores = new Dictionary<string, float>();
 
@@ -89,11 +98,21 @@ namespace GalleryNestServer.Services
             return categoryScores;
         }
 
+        private SKImage ConvertToSkiaImage(Image imageSharp)
+        {
+            using var memoryStream = new MemoryStream();
+            imageSharp.Save(memoryStream, new PngEncoder());
+            memoryStream.Position = 0;
+
+            return SKImage.FromEncodedData(memoryStream);
+        }
+
         public void Dispose()
         {
             _yolo?.Dispose();
             _semaphore?.Dispose();
             GC.SuppressFinalize(this);
         }
+
     }
 }

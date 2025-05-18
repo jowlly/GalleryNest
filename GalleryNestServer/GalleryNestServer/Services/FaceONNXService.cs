@@ -18,7 +18,6 @@ namespace GalleryNestServer.Services
         {
             FaceDetectionResult[] faces = _faceDetector.Forward((Bitmap)image);
             if (faces.Length == 0) return null;
-
             var firstFace = faces.OrderByDescending(f => f.Score).First();
             var embedding = _faceEmbedder.Forward((Bitmap)image);
 

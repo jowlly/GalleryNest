@@ -7,6 +7,7 @@ namespace GalleryNestServer.Data
     {
         protected readonly LiteDatabase _database;
         protected readonly ILiteCollection<T> _collection;
+        private static readonly object _dbLock = new object();
 
         public EntityRepository(LiteDatabase database, string collectionName)
         {
@@ -26,7 +27,10 @@ namespace GalleryNestServer.Data
         public void Delete(IEnumerable<int> ids)
         {
 
-            _collection.DeleteMany(entity => ids.Contains(entity.Id) && entity.Id != 1);
+            lock (_dbLock)
+            {
+                _collection.DeleteMany(entity => ids.Contains(entity.Id) && entity.Id != 1);
+            }
         }
 
         public IEnumerable<T> GetAll()
@@ -49,7 +53,10 @@ namespace GalleryNestServer.Data
 
         public void Set(IEnumerable<T> photos)
         {
-            _collection.Upsert(photos.Select(x => { x.CreatedAt = DateTime.Now; return x; }).ToList());
+            lock (_dbLock)
+            {
+                _collection.Upsert(photos.Select(x => { x.CreatedAt = DateTime.Now; return x; }).ToList());
+            }
         }
 
 
