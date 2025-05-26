@@ -90,9 +90,9 @@ namespace GalleryNestServer.Services
                 categoryScores[category] = (float)maxConfidence;
             }
 
-            if (categoryScores["человек"] > 0)
+            if (categoryScores["Человек"] > 0)
             {
-                categoryScores["человек"] = Math.Min(categoryScores["человек"] * 1.5f, 1.0f);
+                categoryScores["Человек"] = Math.Min(categoryScores["Человек"] * 1.5f, 1.0f);
             }
 
             return categoryScores;

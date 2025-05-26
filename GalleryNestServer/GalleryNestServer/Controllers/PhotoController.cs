@@ -4,6 +4,7 @@ using GalleryNestServer.Entities;
 using GalleryNestServer.Repositories;
 using GalleryNestServer.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 
@@ -51,6 +52,13 @@ namespace GalleryNestServer.Controllers
             return Ok(products);
         }
 
+        [HttpGet("meta/count")]
+        public ActionResult<IEnumerable<Photo>> GetNumber()
+        {
+            var products = _photoRepository.GetCount();
+            return Ok(products);
+        }
+
         [HttpGet("meta/album")]
         public ActionResult<IEnumerable<Photo>> GetByAlbumId([FromQuery] int albumId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -73,13 +81,13 @@ namespace GalleryNestServer.Controllers
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-            var photos = _photoRepository.GetByAlbumId(selectionId, pageNumber, pageSize);
+            var photos = _photoRepository.GetBySelectionId(selectionId, pageNumber, pageSize);
             return Ok(photos);
         }
         [HttpGet("meta/selection/latest")]
         public ActionResult<Photo> GetLatestBySelectionId([FromQuery] int selectionId)
         {
-            var photo = _photoRepository.GetLatestByAlbumId(selectionId);
+            var photo = _photoRepository.GetLatestBySelectionId(selectionId);
             return Ok(photo);
         }
 
@@ -179,6 +187,7 @@ namespace GalleryNestServer.Controllers
                     Guid = guid,
                     Path = uploadPath,
                     AlbumIds = albumIds.ToList(),
+                    PersonIds = [],
                     CreationTime = creationTime
                 }
             ]);
@@ -196,7 +205,7 @@ namespace GalleryNestServer.Controllers
                             Categories = res,
                             Success = true
                         };
-                        if (result.Categories["человек"] > 0.5)
+                        if (result.Categories["Человек"] > 0.5)
                         {
                             var faceResult = new FaceProcessingResult
                             {
@@ -205,18 +214,30 @@ namespace GalleryNestServer.Controllers
                             };
 
                             using var image = Image.FromStream(fileStream);
-                            var embeddings = _faceService.GetFaceEmbedding(image);
-                            if (embeddings != null)
+                            var embeddings = _faceService.GetFaceEmbeddings(image);
+
+                            if (embeddings?.Count() > 0)
                             {
-                                faceResult.Embeddings.Add(embeddings);
-                            }
-                            var person = _personRepository.GetByEmbedding(faceResult.Embeddings);
-                            if (person == null)
-                            {
-                                var guid = Guid.NewGuid().ToString();
-                                _personRepository.Set([new Person {Guid = guid, Embeddings = faceResult.Embeddings }]);
                                 var photo = _photoRepository.GetByGuid(guid);
-                                photo.PersonIds.Add(guid);
+                                foreach (var embedding in embeddings)
+                                {
+                                    var normalizedEmbedding = Normalize(embedding);
+                                    var person = _personRepository.GetByEmbedding([normalizedEmbedding]);
+
+                                    if (person == null)
+                                    {
+                                        person = new Person { Guid = Guid.NewGuid().ToString() };
+                                        person.AddEmbedding(normalizedEmbedding);
+                                        _personRepository.Set([person]);
+                                    }
+                                    else
+                                    {
+                                        person.AddEmbedding(normalizedEmbedding);
+                                        _personRepository.Set([person]);
+                                    }
+
+                                    photo.PersonIds.Add(person.Guid);
+                                }
                                 _photoRepository.Set([photo]);
                             }
                         }
@@ -229,7 +250,7 @@ namespace GalleryNestServer.Controllers
                         if (selections != null)
                         {
                             var photo = _photoRepository.GetByGuid(guid);
-                            photo.SelectionIds = selections.Where(x => result.Categories.ContainsKey(x.Name)).Select(x => x.Id).ToList();
+                            photo.SelectionIds = selections.Where(x => result.Categories.ContainsKey(x.Name) && result.Categories[x.Name] >= 0.5).Select(x => x.Id).ToList();
                             _photoRepository.Set([photo]);
 
                         }
@@ -241,6 +262,11 @@ namespace GalleryNestServer.Controllers
             });
 
             return Ok(new { FilePath = uploadPath });
+        }
+        private float[] Normalize(float[] vector)
+        {
+            float magnitude = MathF.Sqrt(vector.Sum(x => x * x));
+            return vector.Select(x => x / magnitude).ToArray();
         }
 
         [HttpGet("download")]
@@ -256,10 +282,34 @@ namespace GalleryNestServer.Controllers
             return PhysicalFile(photo.Path, mimeType);
         }
 
-        [HttpGet("download/latest")]
+        [HttpGet("download/album/latest")]
         public IActionResult DownloadLatestAlbumPhoto([FromQuery] int albumId)
         {
             var photo = _photoRepository.GetLatestByAlbumId(albumId);
+
+            if (photo == null)
+                return NotFound("Photo not found.");
+
+            var mimeType = GetMimeType(photo.Path);
+
+            return PhysicalFile(photo.Path, mimeType);
+        }
+        [HttpGet("download/selection/latest")]
+        public IActionResult DownloadLatestSelectionPhoto([FromQuery] int selectionId)
+        {
+            var photo = _photoRepository.GetLatestBySelectionId(selectionId);
+
+            if (photo == null)
+                return NotFound("Photo not found.");
+
+            var mimeType = GetMimeType(photo.Path);
+
+            return PhysicalFile(photo.Path, mimeType);
+        }
+        [HttpGet("download/person/latest")]
+        public IActionResult DownloadLatestPersonPhoto([FromQuery] string personId)
+        {
+            var photo = _photoRepository.GetLatestByPersonGuid(personId);
 
             if (photo == null)
                 return NotFound("Photo not found.");
@@ -280,9 +330,13 @@ namespace GalleryNestServer.Controllers
                 ".gif" => "image/gif",
                 ".bmp" => "image/bmp",
                 ".webp" => "image/webp",
+                ".mp4" => "video/mp4",
+                ".mov" => "video/quicktime",
+                ".avi" => "video/x-msvideo",
+                ".mkv" => "video/x-matroska",
                 _ => "application/octet-stream"
             };
-        }
 
+        }
     }
 }

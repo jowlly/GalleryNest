@@ -14,6 +14,14 @@ namespace GalleryNestServer.Repositories
             _collection.EnsureIndex(x => x.PersonIds);
             _collection.EnsureIndex(x => x.Guid);
         }
+        public new List<Photo> GetPaged(int pageNumber, int pageSize)
+        {
+            return _collection.FindAll()
+                              .OrderByDescending(x => x.CreationTime)
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize).ToList();
+        }
+
         public Photo? GetLatestByAlbumId(int albumId)
         {
             return _collection.Find(entity => entity.AlbumIds.Contains(albumId))
@@ -74,9 +82,16 @@ namespace GalleryNestServer.Repositories
 
         public Photo? GetLatestByPersonGuid(string personId)
         {
-            return _collection.Find(entity => entity.PersonIds.Contains(personId))
+            var all = _collection.FindAll();
+            return _collection.Find(
+                entity => entity.PersonIds.Contains(personId))
                                .OrderByDescending(x => x.CreatedAt)
                                .FirstOrDefault();
+        }
+
+        internal object GetCount()
+        {
+            return _collection.Count();
         }
     }
 }

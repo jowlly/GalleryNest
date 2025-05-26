@@ -15,6 +15,7 @@
     <Grid>
         <local:PhotoGalleryControl
             DeleteCommand="{Binding DeletePhotoCommand}"
+            ItemClickCommand="{Binding PhotoClickCommand}"
             ItemsSource="{Binding PhotoIds}"
             LoadImageCommand="{Binding LoadImageCommand}"
             WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />

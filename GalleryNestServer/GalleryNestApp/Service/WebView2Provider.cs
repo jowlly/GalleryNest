@@ -14,7 +14,11 @@ namespace GalleryNestApp.Service
             {
                 if (_environment == null)
                 {
-                    _environment = await CoreWebView2Environment.CreateAsync();
+                    var options = new CoreWebView2EnvironmentOptions
+                    {
+                        AdditionalBrowserArguments = "--disk-cache-size=1073741824"
+                    };
+                    _environment = await CoreWebView2Environment.CreateAsync(null,null,options);
                 }
                 return _environment;
             }

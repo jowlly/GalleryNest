@@ -38,6 +38,13 @@ namespace GalleryNestApp.View
             typeof(PhotoGalleryControl),
             new PropertyMetadata(false));
 
+        public static readonly DependencyProperty ShowDeleteButtonProperty =
+        DependencyProperty.Register(
+            "ShowDeleteButton",
+            typeof(bool),
+            typeof(PhotoGalleryControl),
+            new PropertyMetadata(false));
+
         public static readonly DependencyProperty ItemClickCommandProperty =
             DependencyProperty.Register(
                 "ItemClickCommand",
@@ -48,6 +55,11 @@ namespace GalleryNestApp.View
         {
             get => (bool)GetValue(ShowAlbumInfoProperty);
             set => SetValue(ShowAlbumInfoProperty, value);
+        }
+        public bool ShowDeleteButton
+        {
+            get => (bool)GetValue(ShowDeleteButtonProperty);
+            set => SetValue(ShowDeleteButtonProperty, value);
         }
 
         public ICommand ItemClickCommand
@@ -127,6 +139,7 @@ namespace GalleryNestApp.View
             if (sender is WebView2CompositionControl webView)
             {
                 ToggleLoadingIndicator(webView, false);
+                webView.CoreWebView2?.Stop();
                 webView.Dispose();
             }
         }
@@ -175,7 +188,8 @@ namespace GalleryNestApp.View
                 Dispatcher.BeginInvoke(() =>
                 {
                     indicator.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-                    deleteButton.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
+                    if (ShowDeleteButton)
+                        deleteButton.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
                     if (ShowAlbumInfo)
                         albumInfo.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
                 }, DispatcherPriority.ContextIdle);
@@ -188,18 +202,69 @@ namespace GalleryNestApp.View
             return parentObject is T parent ? parent : FindVisualParent<T>(parentObject);
         }
 
+        private DateTime _lastScrollTime = DateTime.MinValue;
+        private double _lastVerticalOffset = 0;
+
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             var scrollViewer = (ScrollViewer)sender;
-            if (scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight * 0.95)
+            var currentTime = DateTime.Now;
+
+            // Bounce-эффект при достижении границ
+            if (e.VerticalOffset == 0 || e.VerticalOffset == scrollViewer.ScrollableHeight)
             {
-                if (DataContext is PhotoViewModel)
-                    (DataContext as PhotoViewModel)!.LoadNextPageCommand.Execute(null);
-                if (DataContext is AlbumGalleryViewModel)
-                    (DataContext as AlbumGalleryViewModel)!.LoadNextPageCommand.Execute(null);
-                if (DataContext is AlbumViewModel)
-                    (DataContext as AlbumViewModel)!.LoadNextPageCommand.Execute(null);
+                var transform = new TranslateTransform();
+                scrollViewer.RenderTransform = transform;
+
+                var animation = new DoubleAnimationUsingKeyFrames
+                {
+                    Duration = TimeSpan.FromSeconds(0.8),
+                    KeyFrames = {
+                        new EasingDoubleKeyFrame(
+                            0,
+                            KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0)),
+                            new ElasticEase {
+                                Oscillations = 1,
+                                Springiness = 5,
+                                EasingMode = EasingMode.EaseOut
+                            }),
+                        new EasingDoubleKeyFrame(
+                            e.VerticalChange > 0 ? -15 : 15,
+                            KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.2))),
+                        new EasingDoubleKeyFrame(
+                            0,
+                            KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.8)))
+                    }
+                };
+
+                transform.BeginAnimation(TranslateTransform.YProperty, animation);
             }
+            if (scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight * 0.8 &&
+                (currentTime - _lastScrollTime).TotalMilliseconds > 500 &&
+                _lastVerticalOffset < scrollViewer.VerticalOffset)
+            {
+                _lastScrollTime = currentTime;
+                Dispatcher.BeginInvoke(async () =>
+                {
+                    if (DataContext is PhotoViewModel)
+                        (DataContext as PhotoViewModel)!.LoadNextPageCommand.Execute(null);
+                    if (DataContext is AlbumGalleryViewModel)
+                        (DataContext as AlbumGalleryViewModel)!.LoadNextPageCommand.Execute(null);
+                    if (DataContext is AlbumViewModel)
+                        (DataContext as AlbumViewModel)!.LoadNextPageCommand.Execute(null);
+                    if (DataContext is SelectionGalleryViewModel)
+                        (DataContext as SelectionGalleryViewModel)!.LoadNextPageCommand.Execute(null);
+                    if (DataContext is SelectionsViewModel)
+                        (DataContext as SelectionsViewModel)!.LoadNextPageCommand.Execute(null);
+                    if (DataContext is PersonGalleryViewModel)
+                        (DataContext as PersonGalleryViewModel)!.LoadNextPageCommand.Execute(null);
+                    if (DataContext is PersonViewModel)
+                        (DataContext as PersonViewModel)!.LoadNextPageCommand.Execute(null);
+                    scrollViewer.ScrollToVerticalOffset(_lastVerticalOffset);
+                }, DispatcherPriority.Background);
+            }
+
+            _lastVerticalOffset = scrollViewer.VerticalOffset;
         }
     }
 }

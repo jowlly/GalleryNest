@@ -24,6 +24,7 @@
                                 Margin="10,5"
                                 FontSize="16"
                                 FontWeight="Bold"
+                                Foreground="White"
                                 Text="{Binding Name}" />
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>
@@ -98,6 +99,7 @@
                             Visibility="Collapsed">
                             <TextBlock
                                 FontWeight="Bold"
+                                Foreground="White"
                                 Text="{Binding Name}"
                                 TextTrimming="CharacterEllipsis" />
 

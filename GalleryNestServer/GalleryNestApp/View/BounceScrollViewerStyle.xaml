@@ -1,0 +1,43 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="BounceScrollViewerStyle" TargetType="ScrollViewer">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollViewer">
+                    <Grid>
+                        <ScrollContentPresenter x:Name="ScrollContent" />
+                        <ScrollBar
+                            x:Name="VerticalScrollBar"
+                            Width="8"
+                            HorizontalAlignment="Right"
+                            Cursor="Arrow"
+                            IsEnabled="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                            Opacity="0"
+                            Orientation="Vertical"
+                            ViewportSize="{TemplateBinding ViewportHeight}">
+                            <ScrollBar.RenderTransform>
+                                <TranslateTransform X="0" />
+                            </ScrollBar.RenderTransform>
+                            <ScrollBar.Triggers>
+                                <EventTrigger RoutedEvent="ScrollBar.Scroll">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1"
+                                                Duration="0:0:0.2" />
+                                            <DoubleAnimation
+                                                BeginTime="0:0:1"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="0"
+                                                Duration="0:0:0.5" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </ScrollBar.Triggers>
+                        </ScrollBar>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

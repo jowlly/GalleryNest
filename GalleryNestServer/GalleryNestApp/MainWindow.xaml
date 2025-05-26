@@ -42,11 +42,17 @@
                     Click="FavouriteButton_Click"
                     Content="Избранные" />
                 <ui:Button
-                    x:Name="UpdateButton"
+                    x:Name="SelectionsButton"
                     Margin="5"
                     HorizontalAlignment="Stretch"
-                    Click="UpdateButton_Click"
-                    Content="Обновления" />
+                    Click="SelectionsButton_Click"
+                    Content="Подборки" />
+                <ui:Button
+                    x:Name="PersonsButton"
+                    Margin="5"
+                    HorizontalAlignment="Stretch"
+                    Click="PersonsButton_Click"
+                    Content="Люди" />
                 <ui:Button
                     x:Name="DevicesButton"
                     Margin="5"

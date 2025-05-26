@@ -9,6 +9,7 @@ namespace GalleryNestApp
 {
     public partial class MainWindow : Window
     {
+        private const string BASE_URL = "http://localhost:5285/api";
         private readonly INavigationService navigationService;
         private readonly ServiceProvider _serviceProvider;
 
@@ -33,17 +34,27 @@ namespace GalleryNestApp
             services.AddSingleton(provider =>
                 new PhotoService(
                     provider.GetRequiredService<HttpClient>(),
-                    "http://localhost:5285/api"
+                    BASE_URL
                 ));
             services.AddSingleton(provider =>
                 new DeviceService(
                     provider.GetRequiredService<HttpClient>(),
-                    "http://localhost:5285/api"
+                    BASE_URL
                 ));
             services.AddSingleton(provider =>
                 new AlbumService(
                     provider.GetRequiredService<HttpClient>(),
-                    "http://localhost:5285/api"
+                    BASE_URL
+                ));
+            services.AddSingleton(provider =>
+                new SelectionService(
+                    provider.GetRequiredService<HttpClient>(),
+                    BASE_URL
+                ));
+            services.AddSingleton(provider =>
+                new PersonService(
+                    provider.GetRequiredService<HttpClient>(),
+                    BASE_URL
                 ));
             // Регистрация ViewModel
             services.AddTransient<PhotoViewModel>();
@@ -52,7 +63,11 @@ namespace GalleryNestApp
             services.AddTransient<DeviceViewModel>();
             services.AddTransient<AlbumViewModel>();
             services.AddTransient<FavouriteViewModel>();
-            services.AddTransient<UpdateViewModel>();
+            services.AddTransient<SelectionsViewModel>();
+            services.AddTransient<SelectionGalleryViewModel>();
+            services.AddTransient<PersonViewModel>();
+            services.AddTransient<PersonGalleryViewModel>();
+            services.AddTransient<PhotoShowViewModel>();
 
             // Регистрация страниц
             services.AddTransient<PhotoPage>();
@@ -60,8 +75,11 @@ namespace GalleryNestApp
             services.AddTransient<AlbumGalleryPage>();
             services.AddTransient<DevicePage>();
             services.AddTransient<AlbumPage>();
-            services.AddTransient<FavouritesPage>();
-            services.AddTransient<UpdatesPage>();
+            services.AddTransient<SelectionsPage>();
+            services.AddTransient<SelectionGalleryPage>();
+            services.AddTransient<PersonPage>();
+            services.AddTransient<PersonGalleryPage>();
+            services.AddTransient<PhotoShowPage>();
 
             // Регистрация NavigationService
             services.AddSingleton<INavigationService>(provider =>
@@ -76,13 +94,16 @@ namespace GalleryNestApp
             => NavigationService.NavigateTo<DevicePage>();
 
         private void FavouriteButton_Click(object sender, RoutedEventArgs e)
-            => NavigationService.NavigateTo<FavouritesPage>();
+            => NavigationService.NavigateTo<SelectionsPage>();
 
         private void AlbumButton_Click(object sender, RoutedEventArgs e)
             => NavigationService.NavigateTo<AlbumPage>();
 
-        private void UpdateButton_Click(object sender, RoutedEventArgs e)
-            => NavigationService.NavigateTo<UpdatesPage>();
+        private void SelectionsButton_Click(object sender, RoutedEventArgs e)
+            => NavigationService.NavigateTo<SelectionsPage>();
+
+        private void PersonsButton_Click(object sender, RoutedEventArgs e)
+            => NavigationService.NavigateTo<PersonPage>();
 
     }
 

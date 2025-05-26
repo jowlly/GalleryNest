@@ -8,51 +8,33 @@ namespace GalleryNestServer.Repositories
     {
         public PersonRepository(LiteDatabase database, string collectionName) : base(database, collectionName)
         {
-            _collection.EnsureIndex(x => x.Embeddings);
+            _collection.EnsureIndex(x => x.Guid);
         }
-        public Person? GetByEmbedding(List<float[]> inputEmbeddings, float similarityThreshold = 0.75f)
+        public Person? GetByEmbedding(List<float[]> inputEmbeddings, float similarityThreshold = 0.6f)
         {
+            var normalizedInputs = inputEmbeddings.Select(Normalize).ToList();
+
             return _collection.FindAll()
+                .OrderByDescending(person =>
+                    normalizedInputs.Max(input =>
+                        CalculateSimilarity(person.AverageEmbedding, input)))
                 .FirstOrDefault(person =>
-                    person.Embeddings.Any(personEmbedding =>
-                        inputEmbeddings.Any(inputEmbedding =>
-                            IsCosineSimilar(personEmbedding, inputEmbedding, similarityThreshold))));
+                    normalizedInputs.Any(input =>
+                        CalculateSimilarity(person.AverageEmbedding, input) >= similarityThreshold));
         }
 
-        private bool IsCosineSimilar(float[] a, float[] b, float threshold)
+        private float CalculateSimilarity(float[] a, float[] b)
         {
-            if (a.Length != b.Length) return false;
-
-            float dotProduct = 0f;
-            float magnitudeA = 0f;
-            float magnitudeB = 0f;
-
+            float dot = 0;
             for (int i = 0; i < a.Length; i++)
-            {
-                dotProduct += a[i] * b[i];
-                magnitudeA += a[i] * a[i];
-                magnitudeB += b[i] * b[i];
-            }
-
-            magnitudeA = MathF.Sqrt(magnitudeA);
-            magnitudeB = MathF.Sqrt(magnitudeB);
-
-            if (magnitudeA == 0 || magnitudeB == 0)
-                return false;
-
-            float similarity = dotProduct / (magnitudeA * magnitudeB);
-            return similarity >= threshold;
+                dot += a[i] * b[i];
+            return dot;
         }
-        private bool IsSimilar(float[] a, float[] b, float epsilon)
-        {
-            if (a.Length != b.Length) return false;
 
-            for (int i = 0; i < a.Length; i++)
-            {
-                if (Math.Abs(a[i] - b[i]) > epsilon)
-                    return false;
-            }
-            return true;
+        private float[] Normalize(float[] vector)
+        {
+            float magnitude = MathF.Sqrt(vector.Sum(x => x * x));
+            return vector.Select(x => x / magnitude).ToArray();
         }
     }
 }

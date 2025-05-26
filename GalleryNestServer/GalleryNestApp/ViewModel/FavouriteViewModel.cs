@@ -19,7 +19,7 @@ namespace GalleryNestApp.ViewModel
 
         public async Task UploadFile(string fileName)
         {
-            await _photoService.UploadFile(fileName);
+            await _photoService.UploadFile(fileName, [1]);
         }
     }
 }

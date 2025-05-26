@@ -1,22 +1,22 @@
-﻿using GalleryNestApp.Service;
+﻿using GalleryNestApp.Model;
+using GalleryNestApp.Service;
 using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Wpf.Ui.Input;
-using Album = GalleryNestApp.Model.Album;
 
 namespace GalleryNestApp.ViewModel
 {
-    public class AlbumViewModel : ObservableObject
+    public class PersonViewModel : ObservableObject
     {
         #region Fields
-        private AlbumService _albumService;
-        private ObservableCollection<Album> _albums = [];
+        private PersonService _personService;
+        private ObservableCollection<Person> _persons = [];
         private ObservableCollection<int> _photoIds = [];
-        private string _albumName = string.Empty;
-        private Album? _selectedAlbum = null;
+        private string _selectionName = string.Empty;
+        private Person? _selectedPerson = null;
         private PhotoService _photoService;
         private readonly INavigationService _navigationService;
 
@@ -57,13 +57,13 @@ namespace GalleryNestApp.ViewModel
                 OnPropertyChanged(nameof(IsLoading));
             }
         }
-        public ObservableCollection<Album> Albums
+        public ObservableCollection<Person> Persons
         {
-            get => _albums;
+            get => _persons;
             set
             {
-                _albums = value;
-                OnPropertyChanged(nameof(Albums));
+                _persons = value;
+                OnPropertyChanged(nameof(Persons));
             }
         }
         public ObservableCollection<int> PhotoIds
@@ -76,29 +76,29 @@ namespace GalleryNestApp.ViewModel
             }
         }
 
-        public string AlbumName
+        public string PersonName
         {
-            get => _albumName;
+            get => _selectionName;
             set
             {
-                _albumName = value;
-                OnPropertyChanged(nameof(AlbumName));
+                _selectionName = value;
+                OnPropertyChanged(nameof(PersonName));
             }
         }
-        public Album SelectedAlbum
+        public Person SelectedPerson
         {
-            get => _selectedAlbum ?? new Album();
+            get => _selectedPerson ?? new Person();
             set
             {
-                _selectedAlbum = value;
-                OnPropertyChanged(nameof(SelectedAlbum));
+                _selectedPerson = value;
+                OnPropertyChanged(nameof(SelectedPerson));
             }
         }
         #endregion
 
-        public AlbumViewModel(AlbumService albumService, PhotoService photoService, INavigationService navigationService)
+        public PersonViewModel(PersonService albumService, PhotoService photoService, INavigationService navigationService)
         {
-            _albumService = albumService;
+            _personService = albumService;
             _photoService = photoService;
             _navigationService = navigationService;
             Task.Run(async () =>
@@ -117,14 +117,14 @@ namespace GalleryNestApp.ViewModel
             {
                 if (reset) CurrentPage = 1;
 
-                var pagedResult = await _albumService.GetPagedAsync(CurrentPage, pageSize);
+                var pagedResult = await _personService.GetPagedAsync(CurrentPage, pageSize);
 
-                if (reset) Albums.Clear();
+                if (reset) Persons.Clear();
                 foreach (var album in from album in pagedResult
-                                      where !Albums.Select(x => x.Id).ToList().Contains(album.Id)
+                                      where !Persons.Select(x => x.Id).ToList().Contains(album.Id)
                                       select album)
                 {
-                    Albums.Add(album);
+                    Persons.Add(album);
                 }
             }
             finally
@@ -145,62 +145,37 @@ namespace GalleryNestApp.ViewModel
 
         public ICommand LoadImageCommand => new RelayCommand<object>(param =>
         {
-            if (param != null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is Album album)
+            if (param != null && (param is WebView2CompositionControl) && (param! as WebView2CompositionControl)!.DataContext is Person album)
             {
-                LoadImageToWebView((param as WebView2CompositionControl)!, album.Id.ToString());
+                LoadImageToWebView((param as WebView2CompositionControl)!, album.Guid.ToString());
             }
         });
 
-        public void LoadImageToWebView(WebView2CompositionControl webView, string albumId)
+        public void LoadImageToWebView(WebView2CompositionControl webView, string selectionId)
         {
-            PhotoService.LoadAlbumPreviewWebView(webView, albumId);
+            PhotoService.LoadPersonPreviewWebView(webView, selectionId);
         }
 
-        public ICommand OpenAlbumCommand => new RelayCommand<object>(param =>
+        public ICommand OpenPersonCommand => new RelayCommand<object>(param =>
         {
-            if (param is Album)
-                _navigationService.NavigateTo<AlbumGalleryPage>((param as Album)!.Id);
+            if (param is Person)
+                _navigationService.NavigateTo<PersonGalleryPage>((param as Person)!.Guid);
         });
 
 
-        private RelayCommand? loadAlbumsCommand = null;
-        public RelayCommand LoadAlbumsCommand => loadAlbumsCommand ??= new RelayCommand(async obj =>
+        private RelayCommand? loadPersonCommand = null;
+        public RelayCommand LoadPersonCommand => loadPersonCommand ??= new RelayCommand(async obj =>
         {
             await LoadDataAsync(true);
         }
         );
 
 
-        private RelayCommand? addAlbumCommand = null;
-        public RelayCommand AddAlbumCommand => addAlbumCommand ??= new RelayCommand(async obj =>
-            {
-                await _albumService.AddAsync(new Album()
-                {
-                    Name = AlbumName
-                });
-                await LoadDataAsync();
-            }
-        );
-
-        private RelayCommand? editAlbumCommand = null;
-        public RelayCommand EditAlbumCommand => editAlbumCommand ??= new RelayCommand(async obj =>
+        private RelayCommand? deletePersonCommand = null;
+        public RelayCommand DeletePersonCommand => deletePersonCommand ??= new RelayCommand(async obj =>
         {
-            await _albumService.EditAsync(
-                        new Album()
-                        {
-                            Id = 0,
-                            Name = AlbumName
-                        });
-
-            await LoadDataAsync();
-        }
-        );
-
-        private RelayCommand? deleteAlbumCommand = null;
-        public RelayCommand DeleteAlbumCommand => deleteAlbumCommand ??= new RelayCommand(async obj =>
-        {
-            await _albumService.DeleteAsync(
-                    [SelectedAlbum.Id]);
+            await _personService.DeleteAsync(
+                    [SelectedPerson.Id]);
 
             await LoadDataAsync();
         }
@@ -208,9 +183,9 @@ namespace GalleryNestApp.ViewModel
 
         #endregion
 
-        public void LoadAlbumToWebView(WebView2CompositionControl webView, string albumId)
+        public void LoadPersonToWebView(WebView2CompositionControl webView, string personId)
         {
-            PhotoService.LoadAlbumPreviewWebView(webView, albumId);
+            PhotoService.LoadPersonPreviewWebView(webView, personId);
         }
 
     }

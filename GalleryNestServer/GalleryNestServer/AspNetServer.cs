@@ -45,6 +45,17 @@ namespace GalleryNestServer
             [
                 new Album(){Id=1,Name="Без альбома"}
             ]);
+
+            scope.ServiceProvider.GetRequiredService<EntityRepository<Selection>>().Set(
+                [
+                    new Selection(){Id=1,Name="Питомцы"},
+                    new Selection(){Id=2,Name="Животные"},
+                    new Selection(){Id=3,Name="Природа"},
+                    new Selection(){Id=4,Name="Еда"},
+                    new Selection(){Id=4,Name="Еда"},
+                    new Selection(){Id=5,Name="Город"},
+                    new Selection(){Id=6,Name="Спорт"},
+                ]);
         }
     }
 }

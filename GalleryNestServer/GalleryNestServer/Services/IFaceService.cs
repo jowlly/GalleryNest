@@ -4,6 +4,6 @@ namespace GalleryNestServer.Services
 {
     public interface IFaceService
     {
-        float[]? GetFaceEmbedding(Image image);
+        List<float[]> GetFaceEmbeddings(Image image);
     }
 }

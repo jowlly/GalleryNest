@@ -1,6 +1,9 @@
-﻿using GalleryNestApp.Service;
+﻿using GalleryNestApp.Model;
+using GalleryNestApp.Service;
+using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
+using NuGet.Packaging;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -24,6 +27,7 @@ namespace GalleryNestApp.ViewModel
 
         private Photo? _selectedPhoto = null;
         private const int PageSize = 3;
+        private readonly INavigationService _navigationService;
         private int _currentPage = 1;
         private int _totalPages = 10;
         private bool _isLoading = false;
@@ -100,9 +104,10 @@ namespace GalleryNestApp.ViewModel
         }
         #endregion
 
-        public PhotoViewModel(PhotoService photoService)
+        public PhotoViewModel(PhotoService photoService, INavigationService navigationService)
         {
             PhotoService = photoService;
+            _navigationService = navigationService;
             InitGroups();
             LoadDataAsync(pageSize: 9);
             CurrentPage = 3;
@@ -115,26 +120,25 @@ namespace GalleryNestApp.ViewModel
             GroupedPhotos.SortDescriptions.Add(new SortDescription("CreationTime", ListSortDirection.Descending));
         }
 
-        private void LoadDataAsync(bool reset = false, int pageSize = PageSize)
+        private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
         {
             if (IsLoading) return;
             IsLoading = true;
 
             try
             {
-                if (reset) CurrentPage = 1;
-                var pagedResult = Task.Run(() =>
+                if (reset)
                 {
-                    return PhotoService.GetPagedAsync(CurrentPage, pageSize);
-                }).Result;
-
-                if (reset) Photos.Clear();
-                foreach (var photo in from photo in pagedResult
-                                      where !Photos.Contains(photo)
-                                      select photo)
-                {
-                    Photos.Add(photo);
+                    Photos.Clear();
+                    CurrentPage = 1;
                 }
+
+                var pagedResult = await PhotoService.GetPagedAsync(CurrentPage, pageSize);
+                var newPhotos = pagedResult.Except(Photos).ToList();
+
+                Photos.AddRange(newPhotos);
+
+                TotalPages = await PhotoService.GetTotalPagesAsync(pageSize);
             }
             finally
             {
@@ -143,9 +147,21 @@ namespace GalleryNestApp.ViewModel
         }
 
         #region Commands
+
+        public ICommand PhotoClickCommand => new RelayCommand<object>(param =>
+        {
+            if (param is Photo)
+                _navigationService.NavigateTo<PhotoShowPage>((param as Photo)!.Id);
+        });
+
         public ICommand LoadNextPageCommand => new RelayCommand(async _ =>
         {
-            if (CurrentPage < TotalPages && !IsLoading)
+            if (CurrentPage > 1 && Photos.Count()==0)
+            {
+                LoadDataAsync(pageSize: 9);
+                CurrentPage = 3;
+            }
+            else if (CurrentPage < TotalPages && !IsLoading)
             {
                 CurrentPage++;
                 LoadDataAsync();
@@ -192,9 +208,9 @@ namespace GalleryNestApp.ViewModel
         private RelayCommand? deletePhotoCommand = null;
         public RelayCommand DeletePhotoCommand => deletePhotoCommand ??= new RelayCommand(async obj =>
         {
-            if (obj is int photoId)
+            if (obj is Photo photo)
             {
-                await PhotoService.DeleteAsync((new[] { photoId }).ToList());
+                await PhotoService.DeleteAsync((new[] { photo.Id }).ToList());
 
                 LoadDataAsync();
             }
@@ -213,7 +229,7 @@ namespace GalleryNestApp.ViewModel
         {
             foreach (var fileName in fileNames)
             {
-                await PhotoService.UploadFile(fileName);
+                await PhotoService.UploadFile(fileName, [1]);
             }
             LoadDataAsync();
         }
@@ -222,7 +238,11 @@ namespace GalleryNestApp.ViewModel
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value is DateTime date ? date.Date : value;
+            if (value is DateTime date)
+            {
+                return date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
+            }
+            return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

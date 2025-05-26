@@ -1,29 +1,40 @@
-﻿using GalleryNestApp.Model;
-using GalleryNestApp.Service;
+﻿using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel;
+using GalleryNestServer.Entities;
 using Microsoft.Web.WebView2.Wpf;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 
 namespace GalleryNestApp.View
 {
     /// <summary>
-    /// Логика взаимодействия для AlbumPage.xaml
+    /// Логика взаимодействия для PersonPage.xaml
     /// </summary>
-    public partial class AlbumPage : Page
+    public partial class PersonPage : Page
     {
-        private AlbumViewModel albumViewModel;
+        private PersonViewModel personViewModel;
         private WebView2Provider _webView2Provider;
 
         public WebView2Provider WebView2Provider { get => _webView2Provider; set => _webView2Provider = value; }
 
-        public AlbumPage(AlbumViewModel albumViewModel, WebView2Provider webView2Provider)
+        public PersonPage(PersonViewModel selectionViewModel, WebView2Provider webView2Provider)
         {
-            this.albumViewModel = albumViewModel;
+            this.personViewModel = selectionViewModel;
             this._webView2Provider = webView2Provider;
             InitializeComponent();
-            DataContext = this.albumViewModel;
+            DataContext = this.personViewModel;
         }
 
         private async void WebView_Loaded(object sender, RoutedEventArgs e)
@@ -37,12 +48,12 @@ namespace GalleryNestApp.View
                 await webView.EnsureCoreWebView2Async(env);
             }
 
-            var albumId = Convert.ToString((webView.DataContext as Album)?.Id);
-            if (string.IsNullOrEmpty(albumId)) return;
+            var selectionId = Convert.ToString((webView.DataContext as Person)?.Guid);
+            if (string.IsNullOrEmpty(selectionId)) return;
 
             try
             {
-                albumViewModel.LoadAlbumToWebView(webView, albumId);
+                personViewModel.LoadPersonToWebView(webView, selectionId);
             }
             catch (Exception ex)
             {
@@ -51,32 +62,19 @@ namespace GalleryNestApp.View
 
         }
 
-        private void Upload_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new AddAlbumDialog();
-            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.AlbumName))
-            {
-                albumViewModel.AlbumName = dialog.AlbumName;
-                if (albumViewModel.AddAlbumCommand.CanExecute(null))
-                {
-                    albumViewModel.AddAlbumCommand.Execute(null);
-                }
-            }
-        }
-
         private void WebViewContainer_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.OriginalSource is DependencyObject source)
             {
                 var button = FindVisualParent<Button>(source);
-                if (button != null && button.Command == albumViewModel.DeleteAlbumCommand)
+                if (button != null && button.Command == personViewModel.DeletePersonCommand)
                     return;
             }
 
-            if (sender is Grid grid && grid.DataContext is Album)
+            if (sender is Grid grid && grid.DataContext is Person)
             {
                 var mainWindow = Window.GetWindow(this) as MainWindow;
-                mainWindow?.NavigationService.NavigateTo<AlbumGalleryPage>((grid.DataContext as Album)!.Id);
+                mainWindow?.NavigationService.NavigateTo<SelectionGalleryPage>((grid.DataContext as Person)!.Id);
             }
         }
         private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject

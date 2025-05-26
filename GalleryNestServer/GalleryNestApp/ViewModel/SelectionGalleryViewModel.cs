@@ -9,17 +9,17 @@ using Wpf.Ui.Input;
 
 namespace GalleryNestApp.ViewModel
 {
-    public class AlbumGalleryViewModel : ObservableObject, IParameterReceiver
+    public class SelectionGalleryViewModel : ObservableObject, IParameterReceiver
     {
         private int _albumId;
 
-        public int AlbumId { get => _albumId; set => _albumId = value; }
+        public int SelectionId { get => _albumId; set => _albumId = value; }
 
         public void ReceiveParameter(object parameter)
         {
             if (parameter is int albumId)
             {
-                AlbumId = albumId;
+                SelectionId = albumId;
                 Task.Run(async () =>
                 {
                     await LoadDataAsync(pageSize: 9);
@@ -30,8 +30,6 @@ namespace GalleryNestApp.ViewModel
         }
 
         #region Fields
-        private readonly INavigationService _navigationService;
-
         private PhotoService _photoService;
         public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
 
@@ -39,6 +37,7 @@ namespace GalleryNestApp.ViewModel
         private ObservableCollection<int> _photoIds = [];
         private Photo? _selectedPhoto = null;
         private const int PageSize = 3;
+        private readonly INavigationService _navigationService;
         private int _currentPage = 1;
         private int _totalPages = 10;
         private bool _isLoading = false;
@@ -104,7 +103,7 @@ namespace GalleryNestApp.ViewModel
         }
         #endregion
 
-        public AlbumGalleryViewModel(PhotoService photoService,INavigationService navigationService)
+        public SelectionGalleryViewModel(PhotoService photoService, INavigationService navigationService)
         {
             _photoService = photoService;
             _navigationService = navigationService;
@@ -124,7 +123,7 @@ namespace GalleryNestApp.ViewModel
             {
                 if (reset) CurrentPage = 1;
 
-                var pagedResult = await PhotoService.LoadPhotosForAlbum(AlbumId, CurrentPage, pageSize);
+                var pagedResult = await PhotoService.LoadPhotosForSelection(SelectionId, CurrentPage, pageSize);
 
                 if (reset) PhotoIds.Clear();
                 foreach (var photo in from photo in pagedResult
@@ -148,7 +147,6 @@ namespace GalleryNestApp.ViewModel
                 _navigationService.NavigateTo<PhotoShowPage>((param as Photo)!.Id);
         });
 
-
         public ICommand LoadNextPageCommand => new RelayCommand(async _ =>
         {
             if (CurrentPage < TotalPages && !IsLoading)
@@ -171,41 +169,6 @@ namespace GalleryNestApp.ViewModel
                 LoadImageToWebView((param as WebView2CompositionControl)!, photoId.ToString());
             }
         });
-        private RelayCommand? addPhotoCommand = null;
-        public RelayCommand AddPhotoCommand => addPhotoCommand ??= new RelayCommand(async obj =>
-        {
-            await PhotoService.AddAsync(new Photo()
-            {
-                Id = 0,
-                AlbumIds = [AlbumId],
-            });
-
-            await LoadDataAsync();
-        }
-        );
-
-        private RelayCommand? editPhotoCommand = null;
-        public RelayCommand EditPhotoCommand => editPhotoCommand ??= new RelayCommand(async obj =>
-        {
-            await PhotoService.EditAsync(
-                        new Photo()
-                        {
-                            Id = 0,
-                        });
-            await LoadDataAsync();
-        }
-        );
-
-        private RelayCommand? deletePhotoCommand = null;
-        public RelayCommand DeletePhotoCommand => deletePhotoCommand ??= new RelayCommand(async obj =>
-        {
-            if (obj is int photoId)
-            {
-                await PhotoService.DeleteAsync((new[] { photoId }).ToList());
-
-                await LoadDataAsync();
-            }
-        });
 
         #endregion
 
@@ -220,7 +183,7 @@ namespace GalleryNestApp.ViewModel
         {
             foreach (var fileName in fileNames)
             {
-                await PhotoService.UploadFile(fileName, [AlbumId]);
+                await PhotoService.UploadFile(fileName, [SelectionId]);
             }
             await LoadDataAsync();
         }
