@@ -10,6 +10,62 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <local:CompositeConverter x:Key="CompositeConverter"/>
+        <Style x:Key="CustomContextMenuStyle" TargetType="ContextMenu">
+            <Setter Property="Background" Value="#2D2D2D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#404040"/>
+            <Setter Property="Padding" Value="8"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4">
+                            <ItemsPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8 4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border 
+                    Background="{TemplateBinding Background}"
+                    Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ContentPresenter
+                            Grid.Column="0"
+                            Content="{TemplateBinding Icon}"
+                            Margin="0 0 8 0"/>
+
+                                <ContentPresenter
+                            Grid.Column="1"
+                            ContentSource="Header"
+                            VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewer_ScrollChanged">
         <ItemsControl
             x:Name="PhotosItemsControl"
@@ -79,6 +135,64 @@
                                     Unloaded="WebView_Unloaded" />
                             </Border>
                             <ui:Button
+                                x:Name="MenuButton"
+                                Width="40"
+                                Height="40"
+                                Margin="20"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Panel.ZIndex="10"
+                                Background="#312f45"
+                                Click="MenuButton_Click"
+                                Icon="{ui:SymbolIcon Symbol=MoreCircle20}"
+                                Visibility="Collapsed">
+                                <ui:Button.ContextMenu>
+                                    <ContextMenu
+                                        x:Name="PhotoContextMenu"
+                                        Style="{StaticResource CustomContextMenuStyle}">
+                                        <MenuItem
+                                            Header="Удалить"
+                                            Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"/>
+                                        <MenuItem
+                                            Header="Добавить в избранное"
+                                            Command="{Binding AddToFavoritesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"/>
+                                        <MenuItem Header="Добавить в альбом">
+                                            <MenuItem.ItemsSource>
+                                                <Binding Path="AlbumsSource" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                            </MenuItem.ItemsSource>
+                                            <MenuItem.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image
+                                                            Source="{Binding LastPhotoThumbnail}"
+                                                            Width="40"
+                                                            Height="40"
+                                                            Stretch="UniformToFill"/>
+                                                        <TextBlock
+                                                            Text="{Binding Name}"
+                                                            VerticalAlignment="Center"
+                                                            Margin="5,0,0,0"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </MenuItem.ItemTemplate>
+                                            <MenuItem.ItemContainerStyle>
+                                                <Style TargetType="MenuItem">
+                                                    <Setter
+                                                        Property="Command"
+                                                        Value="{Binding AddToAlbumCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                                    <Setter
+                                                        Property="CommandParameter"
+                                                        Value="{Binding}"/>
+                                                </Style>
+                                            </MenuItem.ItemContainerStyle>
+                                        </MenuItem>
+                                        <!-- Аналогичные пункты для категорий и людей -->
+                                    </ContextMenu>
+                                </ui:Button.ContextMenu>
+                            </ui:Button>
+                            <!--<ui:Button
                                 x:Name="DeleteButton"
                                 Width="40"
                                 Height="40"
@@ -90,7 +204,7 @@
                                 Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
                                 Icon="{ui:SymbolIcon Symbol=Delete48}"
-                                Visibility="Collapsed" />
+                                Visibility="Collapsed" />-->
                         </Grid>
                         <StackPanel
                             x:Name="AlbumInfoPanel"

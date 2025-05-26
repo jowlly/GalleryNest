@@ -19,7 +19,13 @@
             ItemsSource="{Binding GroupedPhotos}"
             LoadImageCommand="{Binding LoadImageCommand}"
             ShowDeleteButton="True"
-            WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
+            WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" AlbumsSource="{Binding Albums}"
+            CategoriesSource="{Binding Categories}"
+            PeopleSource="{Binding People}"
+            AddToFavoritesCommand="{Binding AddToFavoritesCommand}"
+            AddToAlbumCommand="{Binding AddToAlbumCommand}"
+            AddToCategoryCommand="{Binding AddToCategoryCommand}"
+            AddToPersonCommand="{Binding AddToPersonCommand}"/>
         <StackPanel
             Margin="20"
             HorizontalAlignment="Right"

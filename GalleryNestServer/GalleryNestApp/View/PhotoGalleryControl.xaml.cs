@@ -51,6 +51,43 @@ namespace GalleryNestApp.View
                 typeof(ICommand),
                 typeof(PhotoGalleryControl));
 
+
+        public static readonly DependencyProperty AlbumsSourceProperty =
+            DependencyProperty.Register(
+                "AlbumsSource",
+                typeof(IEnumerable),
+                typeof(PhotoGalleryControl));
+
+        public static readonly DependencyProperty AddToFavoritesCommandProperty =
+            DependencyProperty.Register(
+                "AddToFavoritesCommand",
+                typeof(ICommand),
+                typeof(PhotoGalleryControl));
+
+        public static readonly DependencyProperty AddToAlbumCommandProperty =
+            DependencyProperty.Register(
+                "AddToAlbumCommand",
+                typeof(ICommand),
+                typeof(PhotoGalleryControl));
+
+        public IEnumerable AlbumsSource
+        {
+            get => (IEnumerable)GetValue(AlbumsSourceProperty);
+            set => SetValue(AlbumsSourceProperty, value);
+        }
+
+        public ICommand AddToFavoritesCommand
+        {
+            get => (ICommand)GetValue(AddToFavoritesCommandProperty);
+            set => SetValue(AddToFavoritesCommandProperty, value);
+        }
+
+        public ICommand AddToAlbumCommand
+        {
+            get => (ICommand)GetValue(AddToAlbumCommandProperty);
+            set => SetValue(AddToAlbumCommandProperty, value);
+        }
+
         public bool ShowAlbumInfo
         {
             get => (bool)GetValue(ShowAlbumInfoProperty);
@@ -174,6 +211,19 @@ namespace GalleryNestApp.View
                 .OfType<StackPanel>()
                 .FirstOrDefault();
 
+            var menuButton = parentGrid.Children
+                .OfType<Button>()
+                .FirstOrDefault(b => b.Name == "MenuButton");
+
+            if (menuButton != null)
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    menuButton.Visibility = !show && true
+                        ? Visibility.Visible
+                        : Visibility.Collapsed;
+                }, DispatcherPriority.ContextIdle);
+            }
             if (indicator != null && deleteButton != null && albumInfo != null)
             {
                 var animation = new DoubleAnimation
@@ -265,6 +315,20 @@ namespace GalleryNestApp.View
             }
 
             _lastVerticalOffset = scrollViewer.VerticalOffset;
+        }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.ContextMenu != null)
+            {
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.IsOpen = true;
+            }
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
