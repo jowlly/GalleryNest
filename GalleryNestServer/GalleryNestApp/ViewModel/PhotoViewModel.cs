@@ -19,8 +19,17 @@ namespace GalleryNestApp.ViewModel
         #region Fields
         private PhotoService _photoService;
         public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
+        private AlbumService _albumService;
+        public AlbumService AlbumService { get => _albumService; private set => _albumService = value; }
+        private SelectionService _categoriesService;
+        public SelectionService CategoriesService { get => _categoriesService; private set => _categoriesService = value; }
+        private PersonService _personService;
+        public PersonService PersonService { get => _personService; private set => _personService = value; }
 
         private ObservableCollection<Photo> _photos = [];
+        private ObservableCollection<Album> _albums = [];
+        private ObservableCollection<Selection> _categories= [];
+        private ObservableCollection<Person> _persons= [];
         private ObservableCollection<int> _photoIds = [];
 
         private ICollectionView _groupedPhotos;
@@ -73,6 +82,33 @@ namespace GalleryNestApp.ViewModel
                 OnPropertyChanged(nameof(Photos));
             }
         }
+        public ObservableCollection<Album> Albums
+        {
+            get => _albums;
+            set
+            {
+                _albums = value;
+                OnPropertyChanged(nameof(Albums));
+            }
+        }
+        public ObservableCollection<Selection> Categories
+        {
+            get => _categories;
+            set
+            {
+                _categories = value;
+                OnPropertyChanged(nameof(Categories));
+            }
+        }
+        public ObservableCollection<Person> People
+        {
+            get => _persons;
+            set
+            {
+                _persons = value;
+                OnPropertyChanged(nameof(People));
+            }
+        }
         public ObservableCollection<int> PhotoIds
         {
             get => _photoIds;
@@ -104,9 +140,12 @@ namespace GalleryNestApp.ViewModel
         }
         #endregion
 
-        public PhotoViewModel(PhotoService photoService, INavigationService navigationService)
+        public PhotoViewModel(PhotoService photoService,AlbumService albumService,SelectionService selectionService,PersonService personService, INavigationService navigationService)
         {
             PhotoService = photoService;
+            AlbumService = albumService;
+            CategoriesService = selectionService;
+            PersonService = personService;
             _navigationService = navigationService;
             InitGroups();
             LoadDataAsync(pageSize: 9);
@@ -125,6 +164,9 @@ namespace GalleryNestApp.ViewModel
             if (IsLoading) return;
             IsLoading = true;
 
+            Albums = [..(await AlbumService.GetAllAsync()).ToList()];
+            Categories = [..(await CategoriesService.GetAllAsync()).ToList()];
+            People = [..(await PersonService.GetAllAsync()).ToList()];
             try
             {
                 if (reset)
@@ -192,6 +234,46 @@ namespace GalleryNestApp.ViewModel
             LoadDataAsync();
         }
         );
+
+
+        private RelayCommand? addToAlbumCommand = null;
+        public RelayCommand AddToAlbumCommand => addToAlbumCommand ??= new RelayCommand(async obj =>
+        {
+            (obj as Photo).AlbumIds.Add(1);
+            await PhotoService.EditAsync((obj as Photo));
+
+            LoadDataAsync();
+        }
+        );
+        private RelayCommand? addToCategoryCommand = null;
+        public RelayCommand AddToCategoryCommand => addToCategoryCommand ??= new RelayCommand(async obj =>
+        {
+            (obj as Photo).SelectionIds.Add(1);
+            await PhotoService.EditAsync((obj as Photo));
+
+            LoadDataAsync();
+        }
+        );
+        private RelayCommand? addToFavoritesCommand = null;
+        public RelayCommand AddToFavoritesCommand => addToFavoritesCommand ??= new RelayCommand(async obj =>
+        {
+            (obj as Photo).IsFavourite = true;
+            await PhotoService.EditAsync((obj as Photo));
+
+            LoadDataAsync();
+        }
+        );
+
+        private RelayCommand? addToPersonCommand = null;
+        public RelayCommand AddToPersonCommand => addToPersonCommand ??= new RelayCommand(async obj =>
+        {
+            (obj as Photo).PersonIds.Add("1");
+            await PhotoService.EditAsync((obj as Photo));
+
+            LoadDataAsync();
+        }
+        );
+
 
         private RelayCommand? editPhotoCommand = null;
         public RelayCommand EditPhotoCommand => editPhotoCommand ??= new RelayCommand(async obj =>

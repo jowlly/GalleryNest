@@ -11,54 +11,54 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <local:CompositeConverter x:Key="CompositeConverter"/>
+
+        <local:BindingProxy x:Key="Proxy" Data="{Binding RelativeSource={RelativeSource AncestorType=UserControl}}" />
+
         <Style x:Key="CustomContextMenuStyle" TargetType="ContextMenu">
-            <Setter Property="Background" Value="#2D2D2D"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#404040"/>
-            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Background" Value="#2D2D2D" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#404040" />
+            <Setter Property="Padding" Value="8" />
 
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ContextMenu">
                         <Border
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="4">
-                            <ItemsPresenter/>
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                            <ItemsPresenter />
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="8 4"/>
+        <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="8,4" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="MenuItem">
-                        <Border 
-                    Background="{TemplateBinding Background}"
-                    Padding="{TemplateBinding Padding}">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
                                 <ContentPresenter
-                            Grid.Column="0"
-                            Content="{TemplateBinding Icon}"
-                            Margin="0 0 8 0"/>
+                                    Grid.Column="0"
+                                    Margin="0,0,8,0"
+                                    Content="{TemplateBinding Icon}" />
 
                                 <ContentPresenter
-                            Grid.Column="1"
-                            ContentSource="Header"
-                            VerticalAlignment="Center"/>
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    ContentSource="Header" />
                             </Grid>
                         </Border>
                     </ControlTemplate>
@@ -147,48 +147,94 @@
                                 Icon="{ui:SymbolIcon Symbol=MoreCircle20}"
                                 Visibility="Collapsed">
                                 <ui:Button.ContextMenu>
-                                    <ContextMenu
-                                        x:Name="PhotoContextMenu"
-                                        Style="{StaticResource CustomContextMenuStyle}">
+                                    <ContextMenu x:Name="PhotoContextMenu" Style="{StaticResource CustomContextMenuStyle}">
                                         <MenuItem
-                                            Header="Удалить"
-                                            Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}"/>
+                                            Command="{Binding Data.DeleteCommand, Source={StaticResource Proxy}}"
+                                            CommandParameter="{Binding}"
+                                            Header="Удалить" />
                                         <MenuItem
-                                            Header="Добавить в избранное"
-                                            Command="{Binding AddToFavoritesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}"/>
+                                            Command="{Binding Data.AddToFavoritesCommand, Source={StaticResource Proxy}}"
+                                            CommandParameter="{Binding}"
+                                            Header="Добавить в избранное" />
                                         <MenuItem Header="Добавить в альбом">
                                             <MenuItem.ItemsSource>
-                                                <Binding Path="AlbumsSource" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                <Binding Path="Data.AlbumsSource" Source="{StaticResource Proxy}" />
                                             </MenuItem.ItemsSource>
                                             <MenuItem.ItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <Image
-                                                            Source="{Binding LastPhotoThumbnail}"
                                                             Width="40"
                                                             Height="40"
-                                                            Stretch="UniformToFill"/>
+                                                            Source="{Binding LastPhotoThumbnail}"
+                                                            Stretch="UniformToFill" />
                                                         <TextBlock
-                                                            Text="{Binding Name}"
+                                                            Margin="5,0,0,0"
                                                             VerticalAlignment="Center"
-                                                            Margin="5,0,0,0"/>
+                                                            Text="{Binding Name}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </MenuItem.ItemTemplate>
                                             <MenuItem.ItemContainerStyle>
                                                 <Style TargetType="MenuItem">
-                                                    <Setter
-                                                        Property="Command"
-                                                        Value="{Binding AddToAlbumCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                                    <Setter
-                                                        Property="CommandParameter"
-                                                        Value="{Binding}"/>
+                                                    <Setter Property="Command" Value="{Binding AddToAlbumCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                                    <Setter Property="CommandParameter" Value="{Binding}" />
                                                 </Style>
                                             </MenuItem.ItemContainerStyle>
                                         </MenuItem>
-                                        <!-- Аналогичные пункты для категорий и людей -->
+                                        <MenuItem Header="Добавить в категорию">
+                                            <MenuItem.ItemsSource>
+                                                <Binding Path="Data.CategoriesSource" Source="{StaticResource Proxy}" />
+                                            </MenuItem.ItemsSource>
+                                            <MenuItem.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image
+                                                            Width="40"
+                                                            Height="40"
+                                                            Source="{Binding LastPhotoThumbnail}"
+                                                            Stretch="UniformToFill" />
+                                                        <TextBlock
+                                                            Margin="5,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Name}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </MenuItem.ItemTemplate>
+                                            <MenuItem.ItemContainerStyle>
+                                                <Style TargetType="MenuItem">
+                                                    <Setter Property="Command" Value="{Binding AddToСategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                                    <Setter Property="CommandParameter" Value="{Binding}" />
+                                                </Style>
+                                            </MenuItem.ItemContainerStyle>
+                                        </MenuItem>
+                                        <MenuItem Header="Добавить к человеку">
+                                            <MenuItem.ItemsSource>
+                                                <Binding Path="Data.PeopleSource" Source="{StaticResource Proxy}" />
+                                            </MenuItem.ItemsSource>
+                                            <MenuItem.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image
+                                                            Width="40"
+                                                            Height="40"
+                                                            Source="{Binding LastPhotoThumbnail}"
+                                                            Stretch="UniformToFill" />
+                                                        <TextBlock
+                                                            Margin="5,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Name}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </MenuItem.ItemTemplate>
+                                            <MenuItem.ItemContainerStyle>
+                                                <Style TargetType="MenuItem">
+                                                    <Setter Property="Command" Value="{Binding AddToPersonCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                                    <Setter Property="CommandParameter" Value="{Binding}" />
+                                                </Style>
+                                            </MenuItem.ItemContainerStyle>
+                                        </MenuItem>
+                                        <!--  Аналогичные пункты для категорий и людей  -->
                                     </ContextMenu>
                                 </ui:Button.ContextMenu>
                             </ui:Button>

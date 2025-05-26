@@ -57,6 +57,16 @@ namespace GalleryNestApp.View
                 "AlbumsSource",
                 typeof(IEnumerable),
                 typeof(PhotoGalleryControl));
+        public static readonly DependencyProperty CategoriesSourceProperty =
+            DependencyProperty.Register(
+                "CategoriesSource",
+                typeof(IEnumerable),
+                typeof(PhotoGalleryControl));
+        public static readonly DependencyProperty PeopleSourceProperty =
+            DependencyProperty.Register(
+                "PeopleSource",
+                typeof(IEnumerable),
+                typeof(PhotoGalleryControl));
 
         public static readonly DependencyProperty AddToFavoritesCommandProperty =
             DependencyProperty.Register(
@@ -70,6 +80,19 @@ namespace GalleryNestApp.View
                 typeof(ICommand),
                 typeof(PhotoGalleryControl));
 
+        public static readonly DependencyProperty AddToCategoryCommandProperty =
+            DependencyProperty.Register(
+                "AddToCategoryCommand",
+                typeof(ICommand),
+                typeof(PhotoGalleryControl));
+
+        public static readonly DependencyProperty AddToPersonCommandProperty =
+            DependencyProperty.Register(
+                "AddToPersonCommand",
+                typeof(ICommand),
+                typeof(PhotoGalleryControl));
+
+
         public IEnumerable AlbumsSource
         {
             get => (IEnumerable)GetValue(AlbumsSourceProperty);
@@ -82,10 +105,22 @@ namespace GalleryNestApp.View
             set => SetValue(AddToFavoritesCommandProperty, value);
         }
 
+        public ICommand AddToPersonCommand
+        {
+            get => (ICommand)GetValue(AddToPersonCommandProperty);
+            set => SetValue(AddToPersonCommandProperty, value);
+        }
+
         public ICommand AddToAlbumCommand
         {
             get => (ICommand)GetValue(AddToAlbumCommandProperty);
             set => SetValue(AddToAlbumCommandProperty, value);
+        }
+        
+        public ICommand AddToCategoryCommand
+        {
+            get => (ICommand)GetValue(AddToCategoryCommandProperty);
+            set => SetValue(AddToCategoryCommandProperty, value);
         }
 
         public bool ShowAlbumInfo
@@ -115,6 +150,18 @@ namespace GalleryNestApp.View
         {
             get => (IEnumerable)GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
+        }
+
+        public IEnumerable CategoriesSource
+        {
+            get => (IEnumerable)GetValue(CategoriesSourceProperty);
+            set => SetValue(CategoriesSourceProperty, value);
+        }
+
+        public IEnumerable PeopleSource
+        {
+            get => (IEnumerable)GetValue(PeopleSourceProperty);
+            set => SetValue(PeopleSourceProperty, value);
         }
 
         public ICommand DeleteCommand
