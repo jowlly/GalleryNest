@@ -262,6 +262,17 @@ namespace GalleryNestApp.View
                 .OfType<Button>()
                 .FirstOrDefault(b => b.Name == "MenuButton");
 
+            var favoriteButton = parentGrid.Children
+                .OfType<Button>()
+                .FirstOrDefault(b => b.Name == "FavoriteButton");
+            if (favoriteButton != null)
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    favoriteButton.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
+                }, DispatcherPriority.ContextIdle);
+            }
+
             if (menuButton != null)
             {
                 Dispatcher.BeginInvoke(() =>

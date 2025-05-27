@@ -61,6 +61,7 @@ namespace GalleryNestApp
             services.AddTransient<FullScreenPhotoViewModel>();
             services.AddTransient<AlbumGalleryViewModel>();
             services.AddTransient<DeviceViewModel>();
+            services.AddTransient<FavouriteViewModel>();
             services.AddTransient<AlbumViewModel>();
             services.AddTransient<FavouriteViewModel>();
             services.AddTransient<SelectionsViewModel>();
@@ -74,6 +75,7 @@ namespace GalleryNestApp
             services.AddTransient<FullScreenPhotoPage>();
             services.AddTransient<AlbumGalleryPage>();
             services.AddTransient<DevicePage>();
+            services.AddTransient<FavouritesPage>();
             services.AddTransient<AlbumPage>();
             services.AddTransient<SelectionsPage>();
             services.AddTransient<SelectionGalleryPage>();
@@ -94,7 +96,7 @@ namespace GalleryNestApp
             => NavigationService.NavigateTo<DevicePage>();
 
         private void FavouriteButton_Click(object sender, RoutedEventArgs e)
-            => NavigationService.NavigateTo<SelectionsPage>();
+            => NavigationService.NavigateTo<FavouritesPage>();
 
         private void AlbumButton_Click(object sender, RoutedEventArgs e)
             => NavigationService.NavigateTo<AlbumPage>();

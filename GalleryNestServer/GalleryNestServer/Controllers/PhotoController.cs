@@ -133,15 +133,28 @@ namespace GalleryNestServer.Controllers
             if (entities.Count() < 0) return BadRequest();
             var albumIds = _albumRepository.GetAll().Select(x => x.Id);
             var selectionIds = _selectionRepository.GetAll().Select(x => x.Id);
+            var personIds = _personRepository.GetAll().Select(x => x.Guid);
 
-            if (!entities.All(x => x.AlbumIds.Any(y => albumIds.Contains(y))))
+            foreach (var entity in entities)
             {
-                return BadRequest("Некорректный идентификатор альбома");
+
+                if (entity.AlbumIds.Count() > 0)
+                    if (!entity.AlbumIds.Any(y => albumIds.Contains(y)))
+                    {
+                        return BadRequest($"Некорректный идентификатор альбома для {entity.Id}");
+                    }
+                if(entity.SelectionIds.Count() > 0)
+                    if (!entity.SelectionIds.Any(y => selectionIds.Contains(y)))
+                    {
+                        return BadRequest($"Некорректный идентификатор подборки для {entity.Id}");
+                    }
+                if (entity.PersonIds.Count() > 0)
+                    if (!entity.PersonIds.Any(y => personIds.Contains(y)))
+                    {
+                        return BadRequest($"Некорректный идентификатор человека для {entity.Id}");
+                    }
             }
-            if (!entities.All(x => x.SelectionIds.Any(y => selectionIds.Contains(y))))
-            {
-                return BadRequest("Некорректный идентификатор альбома");
-            }
+            
 
             _photoRepository.Set(entities);
             return NoContent();

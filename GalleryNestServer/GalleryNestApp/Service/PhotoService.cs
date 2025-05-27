@@ -283,17 +283,18 @@ namespace GalleryNestApp.Service
             return result ?? [];
         }
 
-        private async Task<IEnumerable<Photo>> LoadFavouritePhotos()
+        public async Task<IEnumerable<Photo>> LoadFavouritePhotos(int currentPage, int pageSize)
         {
-            var response = await client.GetStringAsync($"{url}/photo/meta/favourite");
-            return JsonConvert.DeserializeObject<Photo[]>(response) ?? [];
-        }
-        private async Task<IEnumerable<Photo>> LoadUpdatePhotos()
-        {
-            var response = await client.GetStringAsync($"{url}/photo/meta/recent");
-            return JsonConvert.DeserializeObject<Photo[]>(response) ?? [];
-        }
+            var uriBuilder = new UriBuilder($"{url}/photo/meta/favourite");
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+            query["pageNumber"] = currentPage.ToString();
+            query["pageSize"] = pageSize.ToString();
+            uriBuilder.Query = query.ToString();
 
+            var response = await client.GetStringAsync(uriBuilder.Uri.ToString());
+            var result = JsonConvert.DeserializeObject<IEnumerable<Photo>>(response);
+            return result ?? [];
+        }
         public async Task<IEnumerable<Photo>> LoadPhotosForSelection(int selectionId, int currentPage, int pageSize)
         {
             var uriBuilder = new UriBuilder($"{url}/photo/meta/selection");
@@ -330,6 +331,11 @@ namespace GalleryNestApp.Service
             var response = await client.GetStringAsync(uriBuilder.Uri.ToString());
             var result = JsonConvert.DeserializeObject<int>(response);
             return result;
+        }
+
+        internal async Task GetFavouritePagedAsync(int currentPage, int pageSize)
+        {
+            throw new NotImplementedException();
         }
     }
 }

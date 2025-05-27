@@ -12,6 +12,7 @@
     mc:Ignorable="d">
     <UserControl.Resources>
 
+        <local:FavouriteToIconConverter x:Key="FavouriteToIconConverter" />
         <local:BindingProxy x:Key="Proxy" Data="{Binding RelativeSource={RelativeSource AncestorType=UserControl}}" />
 
         <Style x:Key="CustomContextMenuStyle" TargetType="ContextMenu">
@@ -135,6 +136,21 @@
                                     Unloaded="WebView_Unloaded" />
                             </Border>
                             <ui:Button
+                                x:Name="FavoriteButton"
+                                Width="40"
+                                Height="40"
+                                Margin="20"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Panel.ZIndex="10"
+                                Background="#312f45"
+                                Command="{Binding Data.AddToFavoritesCommand, Source={StaticResource Proxy}}"
+                                CommandParameter="{Binding}"
+                                Icon="{Binding IsFavourite, Converter={StaticResource FavouriteToIconConverter}}"
+                                MouseOverBackground="BlueViolet"
+                                Visibility="Visible" />
+
+                            <ui:Button
                                 x:Name="MenuButton"
                                 Width="40"
                                 Height="40"
@@ -145,6 +161,7 @@
                                 Background="#312f45"
                                 Click="MenuButton_Click"
                                 Icon="{ui:SymbolIcon Symbol=MoreCircle20}"
+                                MouseOverBackground="BlueViolet"
                                 Visibility="Collapsed">
                                 <ui:Button.ContextMenu>
                                     <ContextMenu x:Name="PhotoContextMenu" Style="{StaticResource CustomContextMenuStyle}">

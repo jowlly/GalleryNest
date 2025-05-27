@@ -4,6 +4,7 @@ namespace GalleryNestApp.Model
     public class Photo
     {
         public int Id { get; set; }
+        public string Guid { get; set; }
         public List<int> AlbumIds { get; set; }
         public List<int> SelectionIds { get; set; }
         public List<string> PersonIds { get; set; }
