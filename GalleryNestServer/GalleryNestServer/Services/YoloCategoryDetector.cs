@@ -45,7 +45,7 @@ namespace GalleryNestServer.Services
                 using var imageSharp = await Image.LoadAsync(imageStream);
                 using var skImage = ConvertToSkiaImage(imageSharp);
                 var results = _yolo.RunObjectDetection(skImage);
-                return CalculateCategoryScores(results.Select(x=>new ClassificationResult {Confidence = x.Confidence, Label = x.Label.Name}));
+                return CalculateCategoryScores(results.Select(x => new ClassificationResult { Confidence = x.Confidence, Label = x.Label.Name }));
             }
             finally
             {

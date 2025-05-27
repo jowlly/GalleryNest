@@ -1,7 +1,6 @@
 ﻿using GalleryNestServer.Data;
 using GalleryNestServer.Entities;
 using LiteDB;
-using System.Linq;
 
 namespace GalleryNestServer.Repositories
 {

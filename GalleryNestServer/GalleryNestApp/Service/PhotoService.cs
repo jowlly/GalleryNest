@@ -1,19 +1,17 @@
 ﻿using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json;
 using System.Drawing;
-using System.Drawing.Printing;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Text;
-using UMapx.Response;
 using Photo = GalleryNestApp.Model.Photo;
 
 namespace GalleryNestApp.Service
 {
     public class PhotoService(HttpClient client, string url) : EntityService<Photo>(client, $"{url}/photo/meta")
     {
-        public void LoadImageToWebView(WebView2CompositionControl webView, string photoId,bool contain = false)
+        public void LoadImageToWebView(WebView2CompositionControl webView, string photoId, bool contain = false)
         {
             var response = client.GetAsync($"{url}/photo/download?photoId={photoId}").Result;
             try
@@ -38,7 +36,7 @@ namespace GalleryNestApp.Service
                                     img {{
                                         width: 100%;
                                         height: 100%;
-                                        object-fit: {((contain)? $@"contain":$@"cover")};
+                                        object-fit: {((contain) ? $@"contain" : $@"cover")};
                                     }}
                                     video {{
                                         width: 100%;
@@ -207,7 +205,7 @@ namespace GalleryNestApp.Service
                 webView.NavigateToString($"<html><body>Error loading album: {ex.Message}</body></html>");
             }
         }
-        
+
         public async Task<int> UploadFile(string filePath, List<int> albumIds)
         {
             var fileInfo = new FileInfo(filePath);
@@ -265,7 +263,7 @@ namespace GalleryNestApp.Service
                     }
                 }
             }
-            catch {}
+            catch { }
             return new[] { fileInfo.CreationTimeUtc, fileInfo.LastWriteTimeUtc }
                 .OrderBy(t => t)
                 .First();
@@ -353,7 +351,7 @@ namespace GalleryNestApp.Service
                 RequestUri = uriBuilder.Uri
             };
 
-            
+
             var response = await _httpClient.SendAsync(request);
             var result = JsonConvert.DeserializeObject<IEnumerable<Photo>>(await response.Content.ReadAsStringAsync());
             return result ?? [];

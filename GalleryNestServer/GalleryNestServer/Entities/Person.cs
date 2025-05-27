@@ -1,6 +1,4 @@
-﻿using LiteDB;
-
-namespace GalleryNestServer.Entities
+﻿namespace GalleryNestServer.Entities
 {
     public class Person : IdentifiableEntity
     {

@@ -103,7 +103,7 @@ namespace GalleryNestApp.ViewModel
         }
         #endregion
 
-        public AlbumGalleryViewModel(PhotoService photoService,INavigationService navigationService)
+        public AlbumGalleryViewModel(PhotoService photoService, INavigationService navigationService)
         {
             _photoService = photoService;
             _navigationService = navigationService;

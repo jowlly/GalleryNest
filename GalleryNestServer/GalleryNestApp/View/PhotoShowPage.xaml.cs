@@ -2,21 +2,10 @@
 using GalleryNestApp.ViewModel;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Wpf.Ui.Controls;
 
@@ -32,7 +21,7 @@ namespace GalleryNestApp.View
 
         public WebView2Provider WebView2Provider { get => _webView2Provider; set => _webView2Provider = value; }
 
-        public PhotoShowPage(PhotoShowViewModel viewModel,WebView2Provider webView2Provider)
+        public PhotoShowPage(PhotoShowViewModel viewModel, WebView2Provider webView2Provider)
         {
             InitializeComponent();
             _webView2Provider = webView2Provider;

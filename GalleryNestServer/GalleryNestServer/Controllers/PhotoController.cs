@@ -4,8 +4,6 @@ using GalleryNestServer.Entities;
 using GalleryNestServer.Repositories;
 using GalleryNestServer.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Concurrent;
 using System.Drawing;
 
 namespace GalleryNestServer.Controllers

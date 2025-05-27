@@ -3,7 +3,6 @@ using GalleryNestServer.Entities;
 using GalleryNestServer.Repositories;
 using GalleryNestServer.Services;
 using LiteDB;
-using System.Collections.ObjectModel;
 
 namespace GalleryNestServer
 {

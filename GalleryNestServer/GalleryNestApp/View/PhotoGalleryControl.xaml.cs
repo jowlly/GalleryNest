@@ -146,7 +146,7 @@ namespace GalleryNestApp.View
             get => (ICommand)GetValue(AddToAlbumCommandProperty);
             set => SetValue(AddToAlbumCommandProperty, value);
         }
-        
+
         public ICommand AddToCategoryCommand
         {
             get => (ICommand)GetValue(AddToCategoryCommandProperty);
@@ -345,7 +345,7 @@ namespace GalleryNestApp.View
                 .OfType<ProgressRing>()
                 .FirstOrDefault();
 
-            
+
             var albumInfo = mainGrid.Children
                 .OfType<StackPanel>()
                 .FirstOrDefault();
@@ -354,7 +354,7 @@ namespace GalleryNestApp.View
                 .OfType<Button>()
                 .FirstOrDefault(b => b.Name == "MenuButton");
 
-            
+
 
             if (menuButton != null)
             {

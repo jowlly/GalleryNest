@@ -1,17 +1,12 @@
 ﻿using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Wpf.Ui.Input;
 
 namespace GalleryNestApp.ViewModel
 {
-    public class PhotoShowViewModel:ObservableObject,IParameterReceiver
+    public class PhotoShowViewModel : ObservableObject, IParameterReceiver
     {
         private int _photoId;
 
@@ -44,7 +39,7 @@ namespace GalleryNestApp.ViewModel
         });
         public void LoadImageToWebView(WebView2CompositionControl webView, string photoId)
         {
-            PhotoService.LoadImageToWebView(webView, photoId,true);
+            PhotoService.LoadImageToWebView(webView, photoId, true);
         }
     }
 }

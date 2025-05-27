@@ -3,7 +3,7 @@ using GalleryNestApp.ViewModel.Core;
 
 namespace GalleryNestApp.Model
 {
-    public class Photo:ObservableObject
+    public class Photo : ObservableObject
     {
         public int Id { get; set; }
         public string Guid { get; set; }

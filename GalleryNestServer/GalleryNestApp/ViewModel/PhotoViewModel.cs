@@ -1,8 +1,6 @@
-﻿using GalleryNestApp.Model;
-using GalleryNestApp.Service;
+﻿using GalleryNestApp.Service;
 using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
-using GalleryNestServer.Entities;
 using Microsoft.Web.WebView2.Wpf;
 using NuGet.Packaging;
 using System.Collections.ObjectModel;
@@ -377,7 +375,7 @@ namespace GalleryNestApp.ViewModel
         {
 
             var toEdit = SelectedPhotos.ToList();
-            toEdit.ForEach(x => x.IsFavourite=!x.IsFavourite);
+            toEdit.ForEach(x => x.IsFavourite = !x.IsFavourite);
 
             await PhotoService.EditAsync(toEdit);
             foreach (var photo in toEdit)
@@ -424,14 +422,14 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand DeletePhotoCommand => deletePhotoCommand ??= new RelayCommand(async _ =>
         {
             var toDelete = SelectedPhotos.ToList();
-            await PhotoService.DeleteAsync(toDelete.Select(x=>x.Id).ToList());
+            await PhotoService.DeleteAsync(toDelete.Select(x => x.Id).ToList());
             foreach (var photo in toDelete)
             {
                 if (SelectedPhotos.Contains(photo))
                     SelectedPhotos.Remove(photo);
             }
-            UpdatePhotos(toDelete.Select(x=>x.Id).ToList());
-        }); 
+            UpdatePhotos(toDelete.Select(x => x.Id).ToList());
+        });
 
         #endregion
 

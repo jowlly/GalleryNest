@@ -6,7 +6,6 @@ using Microsoft.Web.WebView2.Wpf;
 using NuGet.Packaging;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Input;
 using Wpf.Ui.Input;
