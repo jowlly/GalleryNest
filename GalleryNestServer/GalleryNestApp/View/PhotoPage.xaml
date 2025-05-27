@@ -24,6 +24,9 @@
             ItemClickCommand="{Binding PhotoClickCommand}"
             ItemsSource="{Binding GroupedPhotos}"
             LoadImageCommand="{Binding LoadImageCommand}"
+            LoadLastAlbumImageCommand="{Binding LoadLastAlbumImageCommand}"
+            LoadLastCategoryImageCommand="{Binding LoadLastCategoryImageCommand}"
+            LoadLastPersonImageCommand="{Binding LoadLastPersonImageCommand}"
             PeopleSource="{Binding People}"
             ShowDeleteButton="True"
             WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />

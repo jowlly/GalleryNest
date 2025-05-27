@@ -25,6 +25,36 @@ namespace GalleryNestApp.View
         public static readonly DependencyProperty LoadImageCommandProperty =
             DependencyProperty.Register("LoadImageCommand", typeof(ICommand), typeof(PhotoGalleryControl));
 
+        public ICommand LoadImageCommand
+        {
+            get => (ICommand)GetValue(LoadImageCommandProperty);
+            set => SetValue(LoadImageCommandProperty, value);
+        }
+        public static readonly DependencyProperty LoadLastAlbumImageCommandProperty =
+            DependencyProperty.Register("LoadLastAlbumImageCommand", typeof(ICommand), typeof(PhotoGalleryControl));
+
+        public ICommand LoadLastAlbumImageCommand
+        {
+            get => (ICommand)GetValue(LoadLastAlbumImageCommandProperty);
+            set => SetValue(LoadLastAlbumImageCommandProperty, value);
+        }
+        public static readonly DependencyProperty LoadLastCategoryImageCommandProperty =
+            DependencyProperty.Register("LoadLastCategoryImageCommand", typeof(ICommand), typeof(PhotoGalleryControl));
+
+        public ICommand LoadLastCategoryImageCommand
+        {
+            get => (ICommand)GetValue(LoadLastCategoryImageCommandProperty);
+            set => SetValue(LoadLastCategoryImageCommandProperty, value);
+        }
+        public static readonly DependencyProperty LoadLastPersonImageCommandProperty =
+            DependencyProperty.Register("LoadLastPersonImageCommand", typeof(ICommand), typeof(PhotoGalleryControl));
+
+        public ICommand LoadLastPersonImageCommand
+        {
+            get => (ICommand)GetValue(LoadLastPersonImageCommandProperty);
+            set => SetValue(LoadLastPersonImageCommandProperty, value);
+        }
+
         public static readonly DependencyProperty WebView2EnvironmentProviderProperty =
        DependencyProperty.Register(
            "WebView2EnvironmentProvider",
@@ -170,12 +200,6 @@ namespace GalleryNestApp.View
             set => SetValue(DeleteCommandProperty, value);
         }
 
-        public ICommand LoadImageCommand
-        {
-            get => (ICommand)GetValue(LoadImageCommandProperty);
-            set => SetValue(LoadImageCommandProperty, value);
-        }
-
         public PhotoGalleryControl()
         {
             InitializeComponent();
@@ -218,13 +242,83 @@ namespace GalleryNestApp.View
             }
         }
 
+        private async void WebAlbumView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var webView = sender as WebView2CompositionControl;
+            if (webView == null || WebView2EnvironmentProvider == null) return;
+
+            ToggleLoadingIndicator(webView, true);
+
+            try
+            {
+                var env = await WebView2EnvironmentProvider.GetEnvironmentAsync();
+                await webView.EnsureCoreWebView2Async(env);
+
+                if (LoadLastAlbumImageCommand?.CanExecute(webView) == true)
+                    LoadLastAlbumImageCommand.Execute(webView);
+            }
+            catch (Exception ex)
+            {
+                ToggleLoadingIndicator(webView, false);
+                webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
+        }
+
+        private async void WebCategoryView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var webView = sender as WebView2CompositionControl;
+            if (webView == null || WebView2EnvironmentProvider == null) return;
+
+            ToggleLoadingIndicator(webView, true);
+
+            try
+            {
+                var env = await WebView2EnvironmentProvider.GetEnvironmentAsync();
+                await webView.EnsureCoreWebView2Async(env);
+
+                if (LoadLastCategoryImageCommand?.CanExecute(webView) == true)
+                    LoadLastCategoryImageCommand.Execute(webView);
+            }
+            catch (Exception ex)
+            {
+                ToggleLoadingIndicator(webView, false);
+                webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
+        }
+
+        private async void WebPersonView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var webView = sender as WebView2CompositionControl;
+            if (webView == null || WebView2EnvironmentProvider == null) return;
+
+            ToggleLoadingIndicator(webView, true);
+
+            try
+            {
+                var env = await WebView2EnvironmentProvider.GetEnvironmentAsync();
+                await webView.EnsureCoreWebView2Async(env);
+
+                if (LoadLastPersonImageCommand?.CanExecute(webView) == true)
+                    LoadLastPersonImageCommand.Execute(webView);
+            }
+            catch (Exception ex)
+            {
+                ToggleLoadingIndicator(webView, false);
+                webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
+        }
+
         private void WebView_Unloaded(object sender, RoutedEventArgs e)
         {
             if (sender is WebView2CompositionControl webView)
             {
                 ToggleLoadingIndicator(webView, false);
-                webView.CoreWebView2?.Stop();
-                webView.Dispose();
+                try
+                {
+                    webView.CoreWebView2?.Stop();
+                    webView.Dispose();
+                }
+                catch { }
             }
         }
 

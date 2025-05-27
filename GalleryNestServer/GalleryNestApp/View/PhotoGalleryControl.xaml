@@ -165,14 +165,6 @@
                                 Visibility="Collapsed">
                                 <ui:Button.ContextMenu>
                                     <ContextMenu x:Name="PhotoContextMenu" Style="{StaticResource CustomContextMenuStyle}">
-                                        <MenuItem
-                                            Command="{Binding Data.DeleteCommand, Source={StaticResource Proxy}}"
-                                            CommandParameter="{Binding}"
-                                            Header="Удалить" />
-                                        <MenuItem
-                                            Command="{Binding Data.AddToFavoritesCommand, Source={StaticResource Proxy}}"
-                                            CommandParameter="{Binding}"
-                                            Header="Добавить в избранное" />
                                         <MenuItem Header="Добавить в альбом">
                                             <MenuItem.ItemsSource>
                                                 <Binding Path="Data.AlbumsSource" Source="{StaticResource Proxy}" />
@@ -180,11 +172,14 @@
                                             <MenuItem.ItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <Image
-                                                            Width="40"
-                                                            Height="40"
-                                                            Source="{Binding LastPhotoThumbnail}"
-                                                            Stretch="UniformToFill" />
+                                                        <wv2:WebView2CompositionControl
+                                                            x:Name="AlbumWebView"
+                                                            Width="50"
+                                                            Height="50"
+                                                            Margin="5"
+                                                            DefaultBackgroundColor="Transparent"
+                                                            Loaded="WebAlbumView_Loaded"
+                                                            NavigationCompleted="WebView_NavigationCompleted" />
                                                         <TextBlock
                                                             Margin="5,0,0,0"
                                                             VerticalAlignment="Center"
@@ -206,11 +201,14 @@
                                             <MenuItem.ItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <Image
-                                                            Width="40"
-                                                            Height="40"
-                                                            Source="{Binding LastPhotoThumbnail}"
-                                                            Stretch="UniformToFill" />
+                                                        <wv2:WebView2CompositionControl
+                                                            x:Name="CategoryLastWebView"
+                                                            Width="50"
+                                                            Height="50"
+                                                            Margin="5"
+                                                            DefaultBackgroundColor="Transparent"
+                                                            Loaded="WebCategoryView_Loaded"
+                                                            NavigationCompleted="WebView_NavigationCompleted" />
                                                         <TextBlock
                                                             Margin="5,0,0,0"
                                                             VerticalAlignment="Center"
@@ -232,11 +230,14 @@
                                             <MenuItem.ItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <Image
-                                                            Width="40"
-                                                            Height="40"
-                                                            Source="{Binding LastPhotoThumbnail}"
-                                                            Stretch="UniformToFill" />
+                                                        <wv2:WebView2CompositionControl
+                                                            x:Name="PersonLastWebView"
+                                                            Width="50"
+                                                            Height="50"
+                                                            Margin="5"
+                                                            DefaultBackgroundColor="Transparent"
+                                                            Loaded="WebPersonView_Loaded"
+                                                            NavigationCompleted="WebView_NavigationCompleted" />
                                                         <TextBlock
                                                             Margin="5,0,0,0"
                                                             VerticalAlignment="Center"
@@ -251,23 +252,14 @@
                                                 </Style>
                                             </MenuItem.ItemContainerStyle>
                                         </MenuItem>
-                                        <!--  Аналогичные пункты для категорий и людей  -->
+                                        <MenuItem
+                                            Command="{Binding Data.DeleteCommand, Source={StaticResource Proxy}}"
+                                            CommandParameter="{Binding}"
+                                            Header="Удалить" />
                                     </ContextMenu>
                                 </ui:Button.ContextMenu>
                             </ui:Button>
-                            <!--<ui:Button
-                                x:Name="DeleteButton"
-                                Width="40"
-                                Height="40"
-                                Margin="20"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom"
-                                Panel.ZIndex="10"
-                                Background="#312f45"
-                                Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"
-                                Icon="{ui:SymbolIcon Symbol=Delete48}"
-                                Visibility="Collapsed" />-->
+
                         </Grid>
                         <StackPanel
                             x:Name="AlbumInfoPanel"
@@ -280,9 +272,6 @@
                                 Text="{Binding Name}"
                                 TextTrimming="CharacterEllipsis" />
 
-                            <!--<TextBlock
-                                Text="{Binding Photos.Count, StringFormat='{}Фото: {0}'}"
-                                Foreground="Gray"/>-->
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
