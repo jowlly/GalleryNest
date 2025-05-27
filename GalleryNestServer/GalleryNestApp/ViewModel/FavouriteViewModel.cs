@@ -233,7 +233,7 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand AddToAlbumCommand => addToAlbumCommand ??= new RelayCommand(async obj =>
         {
             (obj as Photo).AlbumIds.Add(1);
-            await PhotoService.EditAsync((obj as Photo));
+            await PhotoService.EditAsync([(obj as Photo)]);
 
             LoadDataAsync();
         }
@@ -242,7 +242,7 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand AddToCategoryCommand => addToCategoryCommand ??= new RelayCommand(async obj =>
         {
             (obj as Photo).SelectionIds.Add(1);
-            await PhotoService.EditAsync((obj as Photo));
+            await PhotoService.EditAsync([(obj as Photo)]);
 
             LoadDataAsync();
         }
@@ -251,7 +251,7 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand AddToFavoritesCommand => addToFavoritesCommand ??= new RelayCommand(async obj =>
         {
             (obj as Photo).IsFavourite = true;
-            await PhotoService.EditAsync((obj as Photo));
+            await PhotoService.EditAsync([(obj as Photo)]);
 
             LoadDataAsync();
         }
@@ -261,7 +261,7 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand AddToPersonCommand => addToPersonCommand ??= new RelayCommand(async obj =>
         {
             (obj as Photo).PersonIds.Add("1");
-            await PhotoService.EditAsync((obj as Photo));
+            await PhotoService.EditAsync([(obj as Photo)]);
 
             LoadDataAsync();
         }
@@ -272,10 +272,10 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand EditPhotoCommand => editPhotoCommand ??= new RelayCommand(async obj =>
         {
             await PhotoService.EditAsync(
-                        new Photo()
+                        [new Photo()
                         {
                             Id = 0,
-                        });
+                        }]);
             LoadDataAsync();
         }
         );

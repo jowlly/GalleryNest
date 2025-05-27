@@ -182,10 +182,10 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand EditPhotoCommand => editPhotoCommand ??= new RelayCommand(async obj =>
         {
             await PhotoService.EditAsync(
-                        new Photo()
+                        [new Photo()
                         {
                             Id = 0,
-                        });
+                        }]);
             await LoadDataAsync();
         }
         );

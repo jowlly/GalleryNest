@@ -210,7 +210,8 @@ namespace GalleryNestApp.View
             if (e.OriginalSource is DependencyObject source)
             {
                 var button = FindVisualParent<Button>(source);
-                if (button != null) return;
+                var checkbox = FindVisualParent<CheckBox>(source);
+                if (button != null || checkbox != null) return;
             }
 
             if (sender is FrameworkElement element &&
@@ -344,10 +345,7 @@ namespace GalleryNestApp.View
                 .OfType<ProgressRing>()
                 .FirstOrDefault();
 
-            var deleteButton = parentGrid.Children
-                .OfType<Button>()
-                .FirstOrDefault();
-
+            
             var albumInfo = mainGrid.Children
                 .OfType<StackPanel>()
                 .FirstOrDefault();
@@ -356,16 +354,7 @@ namespace GalleryNestApp.View
                 .OfType<Button>()
                 .FirstOrDefault(b => b.Name == "MenuButton");
 
-            var favoriteButton = parentGrid.Children
-                .OfType<Button>()
-                .FirstOrDefault(b => b.Name == "FavoriteButton");
-            if (favoriteButton != null)
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    favoriteButton.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
-                }, DispatcherPriority.ContextIdle);
-            }
+            
 
             if (menuButton != null)
             {
@@ -376,7 +365,7 @@ namespace GalleryNestApp.View
                         : Visibility.Collapsed;
                 }, DispatcherPriority.ContextIdle);
             }
-            if (indicator != null && deleteButton != null && albumInfo != null)
+            if (indicator != null && albumInfo != null)
             {
                 var animation = new DoubleAnimation
                 {
@@ -390,8 +379,6 @@ namespace GalleryNestApp.View
                 Dispatcher.BeginInvoke(() =>
                 {
                     indicator.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-                    if (ShowDeleteButton)
-                        deleteButton.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
                     if (ShowAlbumInfo)
                         albumInfo.Visibility = !show ? Visibility.Visible : Visibility.Collapsed;
                 }, DispatcherPriority.ContextIdle);

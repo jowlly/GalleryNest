@@ -12,8 +12,211 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
+    <Page.Resources>
+        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+        <local:BindingProxy x:Key="Proxy" Data="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=Page}}" />
+
+        <Style x:Key="CustomContextMenuStyle" TargetType="ContextMenu">
+            <Setter Property="Background" Value="#2D2D2D" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#404040" />
+            <Setter Property="Padding" Value="8" />
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                            <ItemsPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ContentPresenter
+                                    Grid.Column="0"
+                                    Margin="0,0,8,0"
+                                    Content="{TemplateBinding Icon}" />
+
+                                <ContentPresenter
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    ContentSource="Header" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border
+            Grid.Row="0"
+            Background="#2D2D2D"
+            Visibility="{Binding SelectedPhotos.Count, Converter={StaticResource CountToVisibilityConverter}}">
+            <StackPanel
+                Margin="10"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+
+                <Border
+                    Margin="0,0,15,0"
+                    Padding="8,4"
+                    Background="#404040"
+                    CornerRadius="4">
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="{Binding SelectedPhotos.Count, StringFormat='Выбрано: {0}'}" />
+                </Border>
+
+                <ui:Button
+                    Margin="5,0"
+                    Command="{Binding DeletePhotoCommand}"
+                    Content="Удалить"
+                    Icon="{ui:SymbolIcon Symbol=Delete24}" />
+
+                <ui:Button
+                    Margin="5,0"
+                    Command="{Binding AddToFavoritesCommand}"
+                    Content="В избранное"
+                    Icon="{ui:SymbolIcon Symbol=Star24}" />
+
+                <ui:Button
+                    Margin="5,0"
+                    Click="MenuButton_Click"
+                    Content="В альбом"
+                    Icon="{ui:SymbolIcon Symbol=Album24}"
+                    Visibility="{Binding SelectedPhotos.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                    <ui:Button.ContextMenu>
+                        <ContextMenu ItemsSource="{Binding Albums}" Style="{StaticResource CustomContextMenuStyle}">
+                            <ContextMenu.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <wv2:WebView2CompositionControl
+                                            x:Name="AlbumWebView"
+                                            Width="50"
+                                            Height="50"
+                                            Margin="5"
+                                            DefaultBackgroundColor="Transparent"
+                                            Loaded="WebAlbumView_Loaded"
+                                            NavigationCompleted="WebView_NavigationCompleted" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ContextMenu.ItemTemplate>
+                            <ContextMenu.ItemContainerStyle>
+                                <Style TargetType="MenuItem">
+                                    <Setter Property="Command" Value="{Binding Data.AddToAlbumCommand, Source={StaticResource Proxy}}" />
+                                    <Setter Property="CommandParameter" Value="{Binding}" />
+                                </Style>
+                            </ContextMenu.ItemContainerStyle>
+                        </ContextMenu>
+                    </ui:Button.ContextMenu>
+                </ui:Button>
+
+                <ui:Button
+                    Margin="5,0"
+                    Click="MenuButton_Click"
+                    Content="В категорию"
+                    Icon="{ui:SymbolIcon Symbol=Book24}"
+                    Visibility="{Binding SelectedPhotos.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                    <ui:Button.ContextMenu>
+                        <ContextMenu ItemsSource="{Binding Categories}" Style="{StaticResource CustomContextMenuStyle}">
+                            <ContextMenu.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <wv2:WebView2CompositionControl
+                                            x:Name="CategoryLastWebView"
+                                            Width="50"
+                                            Height="50"
+                                            Margin="5"
+                                            DefaultBackgroundColor="Transparent"
+                                            Loaded="WebCategoryView_Loaded"
+                                            NavigationCompleted="WebView_NavigationCompleted" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ContextMenu.ItemTemplate>
+                            <ContextMenu.ItemContainerStyle>
+                                <Style TargetType="MenuItem">
+                                    <Setter Property="Command" Value="{Binding Data.AddToCategoryCommand, Source={StaticResource Proxy}}" />
+                                    <Setter Property="CommandParameter" Value="{Binding}" />
+                                </Style>
+                            </ContextMenu.ItemContainerStyle>
+                        </ContextMenu>
+                    </ui:Button.ContextMenu>
+                </ui:Button>
+                <ui:Button
+                    Margin="5,0"
+                    Click="MenuButton_Click"
+                    Content="К человеку"
+                    Icon="{ui:SymbolIcon Symbol=Person24}"
+                    Visibility="{Binding SelectedPhotos.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                    <ui:Button.ContextMenu>
+                        <ContextMenu ItemsSource="{Binding People}" Style="{StaticResource CustomContextMenuStyle}">
+                            <ContextMenu.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <wv2:WebView2CompositionControl
+                                            x:Name="PersonLastWebView"
+                                            Width="50"
+                                            Height="50"
+                                            Margin="5"
+                                            DefaultBackgroundColor="Transparent"
+                                            Loaded="WebPersonView_Loaded"
+                                            NavigationCompleted="WebView_NavigationCompleted" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ContextMenu.ItemTemplate>
+                            <ContextMenu.ItemContainerStyle>
+                                <Style TargetType="MenuItem">
+                                    <Setter Property="Command" Value="{Binding Data.AddToPersonCommand, Source={StaticResource Proxy}}" />
+                                    <Setter Property="CommandParameter" Value="{Binding}" />
+                                </Style>
+                            </ContextMenu.ItemContainerStyle>
+                        </ContextMenu>
+                    </ui:Button.ContextMenu>
+                </ui:Button>
+
+            </StackPanel>
+        </Border>
         <local:PhotoGalleryControl
+            Grid.Row="1"
             AddToAlbumCommand="{Binding AddToAlbumCommand}"
             AddToCategoryCommand="{Binding AddToCategoryCommand}"
             AddToFavoritesCommand="{Binding AddToFavoritesCommand}"
@@ -31,6 +234,7 @@
             ShowDeleteButton="True"
             WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
         <StackPanel
+            Grid.Row="1"
             Margin="20"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom">
@@ -43,7 +247,7 @@
             <ui:Button
                 Width="40"
                 Height="40"
-                Command="{Binding LoadPhotoCommand}"
+                Command="{Binding UpdatePhotosCommand}"
                 Icon="{ui:SymbolIcon Symbol=ArrowClockwise32}" />
         </StackPanel>
     </Grid>

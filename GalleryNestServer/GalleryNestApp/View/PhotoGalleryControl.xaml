@@ -135,7 +135,13 @@
                                     NavigationCompleted="WebView_NavigationCompleted"
                                     Unloaded="WebView_Unloaded" />
                             </Border>
-                            <ui:Button
+                            <CheckBox
+                                x:Name="SelectionCheckBox"
+                                Margin="10"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                            <!--<ui:Button
                                 x:Name="FavoriteButton"
                                 Width="40"
                                 Height="40"
@@ -258,7 +264,7 @@
                                             Header="Удалить" />
                                     </ContextMenu>
                                 </ui:Button.ContextMenu>
-                            </ui:Button>
+                            </ui:Button>-->
 
                         </Grid>
                         <StackPanel

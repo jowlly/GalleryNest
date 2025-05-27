@@ -106,11 +106,6 @@ namespace GalleryNestApp.ViewModel
         {
             _photoService = photoService;
             _navigationService = navigationService;
-            //Task.Run(async () =>
-            //{
-            //    await LoadDataAsync(pageSize: 9);
-            //    CurrentPage = 3;
-            //});
         }
 
         private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)

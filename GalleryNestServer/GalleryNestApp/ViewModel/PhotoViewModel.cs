@@ -2,6 +2,7 @@
 using GalleryNestApp.Service;
 using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
+using GalleryNestServer.Entities;
 using Microsoft.Web.WebView2.Wpf;
 using NuGet.Packaging;
 using System.Collections.ObjectModel;
@@ -10,7 +11,10 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Input;
 using Wpf.Ui.Input;
+using Album = GalleryNestApp.Model.Album;
+using Person = GalleryNestApp.Model.Person;
 using Photo = GalleryNestApp.Model.Photo;
+using Selection = GalleryNestApp.Model.Selection;
 
 namespace GalleryNestApp.ViewModel
 {
@@ -27,9 +31,10 @@ namespace GalleryNestApp.ViewModel
         public PersonService PersonService { get => _personService; private set => _personService = value; }
 
         private ObservableCollection<Photo> _photos = [];
+        private ObservableCollection<Photo> _selectedPhotos = [];
         private ObservableCollection<Album> _albums = [];
-        private ObservableCollection<Selection> _categories= [];
-        private ObservableCollection<Person> _persons= [];
+        private ObservableCollection<Selection> _categories = [];
+        private ObservableCollection<Person> _persons = [];
         private ObservableCollection<int> _photoIds = [];
 
         private ICollectionView _groupedPhotos;
@@ -80,6 +85,15 @@ namespace GalleryNestApp.ViewModel
             {
                 _photos = value;
                 OnPropertyChanged(nameof(Photos));
+            }
+        }
+        public ObservableCollection<Photo> SelectedPhotos
+        {
+            get => _selectedPhotos;
+            set
+            {
+                _selectedPhotos = value;
+                OnPropertyChanged(nameof(SelectedPhotos));
             }
         }
         public ObservableCollection<Album> Albums
@@ -140,7 +154,7 @@ namespace GalleryNestApp.ViewModel
         }
         #endregion
 
-        public PhotoViewModel(PhotoService photoService,AlbumService albumService,SelectionService selectionService,PersonService personService, INavigationService navigationService)
+        public PhotoViewModel(PhotoService photoService, AlbumService albumService, SelectionService selectionService, PersonService personService, INavigationService navigationService)
         {
             PhotoService = photoService;
             AlbumService = albumService;
@@ -157,15 +171,31 @@ namespace GalleryNestApp.ViewModel
             GroupedPhotos.GroupDescriptions.Add(new PropertyGroupDescription("CreationTime", new DateTimeToDateConverter()));
             GroupedPhotos.SortDescriptions.Add(new SortDescription("CreationTime", ListSortDirection.Descending));
         }
-
+        private void Photo_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Photo.IsSelected))
+            {
+                var photo = (Photo)sender;
+                if (photo.IsSelected)
+                {
+                    if (!SelectedPhotos.Contains(photo))
+                        SelectedPhotos.Add(photo);
+                }
+                else
+                {
+                    if (SelectedPhotos.Contains(photo))
+                        SelectedPhotos.Remove(photo);
+                }
+            }
+        }
         private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
         {
             if (IsLoading) return;
             IsLoading = true;
 
-            Albums = [..(await AlbumService.GetAllAsync()).ToList()];
-            Categories = [..(await CategoriesService.GetAllAsync()).ToList()];
-            People = [..(await PersonService.GetAllAsync()).ToList()];
+            Albums = [.. (await AlbumService.GetAllAsync()).ToList()];
+            Categories = [.. (await CategoriesService.GetAllAsync()).ToList()];
+            People = [.. (await PersonService.GetAllAsync()).ToList()];
             try
             {
                 if (reset)
@@ -176,10 +206,60 @@ namespace GalleryNestApp.ViewModel
 
                 var pagedResult = await PhotoService.GetPagedAsync(CurrentPage, pageSize);
                 var newPhotos = pagedResult.Except(Photos).ToList();
+                foreach (var photo in newPhotos)
+                {
+                    photo.PropertyChanged += Photo_PropertyChanged;
+                }
 
                 Photos.AddRange(newPhotos);
+                //PhotoIds = [.. Photos.Select(x => x.Id).ToList()];
 
                 TotalPages = await PhotoService.GetTotalPagesAsync(pageSize);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task UpdateDataAsync()
+        {
+            if (IsLoading) return;
+            IsLoading = true;
+
+            Albums = [.. (await AlbumService.GetAllAsync()).ToList()];
+            Categories = [.. (await CategoriesService.GetAllAsync()).ToList()];
+            People = [.. (await PersonService.GetAllAsync()).ToList()];
+            try
+            {
+                var pagedResult = await PhotoService.GetByIds(PhotoIds);
+                Photos = [.. pagedResult];
+                PhotoIds = [.. Photos.Select(x => x.Id).ToList()];
+                GroupedPhotos.Refresh();
+                TotalPages = await PhotoService.GetTotalPagesAsync(PageSize);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task UpdatePhotos(List<int> photoIds)
+        {
+            if (IsLoading) return;
+            IsLoading = true;
+
+            try
+            {
+                var result = await PhotoService.GetByIds(photoIds);
+                if (result.Count() <= 0) Photos.RemoveAt(Photos.ToList().FindIndex(x => photoIds.Contains(x.Id)));
+                else
+                {
+                    result.ToList().ForEach(edit => Photos[Photos.ToList().FindIndex(x => x.Id == edit.Id)] = edit);
+                    var deleted = photoIds.Except(result.Select(x => x.Id));
+                    deleted.ToList().ForEach(x => Photos.RemoveAt(x));
+                }
+                GroupedPhotos.Refresh();
             }
             finally
             {
@@ -194,7 +274,6 @@ namespace GalleryNestApp.ViewModel
             if (param is Photo)
                 _navigationService.NavigateTo<PhotoShowPage>((param as Photo)!.Id);
         });
-
         public ICommand LoadNextPageCommand => new RelayCommand(async _ =>
         {
             if (CurrentPage < TotalPages && !IsLoading)
@@ -202,6 +281,10 @@ namespace GalleryNestApp.ViewModel
                 CurrentPage++;
                 LoadDataAsync();
             }
+        });
+        public ICommand UpdatePhotosCommand => new RelayCommand(async _ =>
+        {
+            UpdateDataAsync();
         });
 
         private RelayCommand? loadPhotoCommand = null;
@@ -250,7 +333,7 @@ namespace GalleryNestApp.ViewModel
                 Id = 0,
             });
 
-            LoadDataAsync();
+            UpdateDataAsync();
         }
         );
 
@@ -259,37 +342,68 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand AddToAlbumCommand => addToAlbumCommand ??= new RelayCommand(async obj =>
         {
             var albumId = (obj as Album).Id;
-            //await PhotoService.EditAsync((obj as Photo));
+            var toEdit = SelectedPhotos.ToList();
+            toEdit.ForEach(x => x.AlbumIds.Add(albumId));
 
-            LoadDataAsync();
+            await PhotoService.EditAsync(toEdit);
+            foreach (var photo in toEdit)
+            {
+                if (SelectedPhotos.Contains(photo))
+                    SelectedPhotos.Remove(photo);
+            }
+            UpdatePhotos(toEdit.Select(x => x.Id).ToList());
+
         }
         );
         private RelayCommand? addToCategoryCommand = null;
         public RelayCommand AddToCategoryCommand => addToCategoryCommand ??= new RelayCommand(async obj =>
         {
             var categoryId = (obj as Selection).Id;
-            //await PhotoService.EditAsync((obj as Photo));
 
-            LoadDataAsync();
+            var toEdit = SelectedPhotos.ToList();
+            toEdit.ForEach(x => x.SelectionIds.Add(categoryId));
+
+            await PhotoService.EditAsync(toEdit);
+            foreach (var photo in toEdit)
+            {
+                if (SelectedPhotos.Contains(photo))
+                    SelectedPhotos.Remove(photo);
+            }
+            UpdatePhotos(toEdit.Select(x => x.Id).ToList());
         }
         );
         private RelayCommand? addToFavoritesCommand = null;
         public RelayCommand AddToFavoritesCommand => addToFavoritesCommand ??= new RelayCommand(async obj =>
         {
-            (obj as Photo).IsFavourite = !(obj as Photo).IsFavourite;
-            await PhotoService.EditAsync((obj as Photo));
 
-            LoadDataAsync();
+            var toEdit = SelectedPhotos.ToList();
+            toEdit.ForEach(x => x.IsFavourite=!x.IsFavourite);
+
+            await PhotoService.EditAsync(toEdit);
+            foreach (var photo in toEdit)
+            {
+                if (SelectedPhotos.Contains(photo))
+                    SelectedPhotos.Remove(photo);
+            }
+            UpdatePhotos(toEdit.Select(x => x.Id).ToList());
         }
         );
 
         private RelayCommand? addToPersonCommand = null;
         public RelayCommand AddToPersonCommand => addToPersonCommand ??= new RelayCommand(async obj =>
         {
-            var personId = (obj as Selection).Id;
-            //await PhotoService.EditAsync((obj as Photo));
+            var personId = (obj as Person).Guid;
 
-            LoadDataAsync();
+            var toEdit = SelectedPhotos.ToList();
+            toEdit.ForEach(x => x.PersonIds.Add(personId));
+
+            await PhotoService.EditAsync(toEdit);
+            foreach (var photo in toEdit)
+            {
+                if (SelectedPhotos.Contains(photo))
+                    SelectedPhotos.Remove(photo);
+            }
+            UpdatePhotos(toEdit.Select(x => x.Id).ToList());
         }
         );
 
@@ -298,24 +412,26 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand EditPhotoCommand => editPhotoCommand ??= new RelayCommand(async obj =>
         {
             await PhotoService.EditAsync(
-                        new Photo()
+                        [new Photo()
                         {
                             Id = 0,
-                        });
-            LoadDataAsync();
+                        }]);
+            UpdateDataAsync();
         }
         );
 
         private RelayCommand? deletePhotoCommand = null;
-        public RelayCommand DeletePhotoCommand => deletePhotoCommand ??= new RelayCommand(async obj =>
+        public RelayCommand DeletePhotoCommand => deletePhotoCommand ??= new RelayCommand(async _ =>
         {
-            if (obj is Photo photo)
+            var toDelete = SelectedPhotos.ToList();
+            await PhotoService.DeleteAsync(toDelete.Select(x=>x.Id).ToList());
+            foreach (var photo in toDelete)
             {
-                await PhotoService.DeleteAsync((new[] { photo.Id }).ToList());
-
-                LoadDataAsync();
+                if (SelectedPhotos.Contains(photo))
+                    SelectedPhotos.Remove(photo);
             }
-        });
+            UpdatePhotos(toDelete.Select(x=>x.Id).ToList());
+        }); 
 
         #endregion
 
@@ -330,9 +446,9 @@ namespace GalleryNestApp.ViewModel
         {
             foreach (var fileName in fileNames)
             {
-                await PhotoService.UploadFile(fileName, [1]);
+                PhotoIds.Add(await PhotoService.UploadFile(fileName, [1]));
             }
-            LoadDataAsync();
+            UpdateDataAsync();
         }
     }
     public class DateTimeToDateConverter : IValueConverter

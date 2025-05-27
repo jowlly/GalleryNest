@@ -101,10 +101,7 @@ namespace GalleryNestApp.ViewModel
             _albumService = albumService;
             _photoService = photoService;
             _navigationService = navigationService;
-            Task.Run(async () =>
-            {
-                await LoadDataAsync();
-            });
+            LoadDataAsync();
         }
 
         private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
@@ -185,11 +182,11 @@ namespace GalleryNestApp.ViewModel
         public RelayCommand EditAlbumCommand => editAlbumCommand ??= new RelayCommand(async obj =>
         {
             await _albumService.EditAsync(
-                        new Album()
+                        [new Album()
                         {
                             Id = 0,
                             Name = AlbumName
-                        });
+                        }]);
 
             await LoadDataAsync();
         }

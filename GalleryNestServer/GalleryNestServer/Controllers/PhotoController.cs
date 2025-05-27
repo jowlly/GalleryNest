@@ -47,6 +47,12 @@ namespace GalleryNestServer.Controllers
             var photo = _photoRepository.GetById(photoId);
             return Ok(photo);
         }
+        [HttpGet("meta/list")]
+        public ActionResult<IEnumerable<Photo>> GetByIds([FromQuery] IEnumerable<int> photoIds)
+        {
+            var photo = _photoRepository.GetByIds(photoIds);
+            return Ok(photo);
+        }
         [HttpGet("meta")]
         public ActionResult<IEnumerable<Photo>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -210,6 +216,7 @@ namespace GalleryNestServer.Controllers
                     CreationTime = creationTime
                 }
             ]);
+            var photo = _photoRepository.GetByGuid(guid);
 
             Task.Run(async () =>
             {
@@ -281,7 +288,7 @@ namespace GalleryNestServer.Controllers
                 }
             });
 
-            return Ok(new { FilePath = uploadPath });
+            return Ok(photo.Id);
         }
         private float[] Normalize(float[] vector)
         {

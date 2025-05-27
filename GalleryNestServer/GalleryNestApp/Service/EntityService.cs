@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Drawing.Printing;
 using System.Net.Http;
 using System.Text;
 
@@ -16,9 +17,9 @@ namespace GalleryNestApp.Service
             var response = await _httpClient.PostAsync($"{_url}", content);
         }
 
-        public async Task EditAsync(T album)
+        public async Task EditAsync(IEnumerable<T> album)
         {
-            var json = JsonConvert.SerializeObject(new List<T> { album });
+            var json = JsonConvert.SerializeObject( album );
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var uriBuilder = new UriBuilder($"{_url}");
             HttpRequestMessage request = new HttpRequestMessage
@@ -70,5 +71,6 @@ namespace GalleryNestApp.Service
             var result = JsonConvert.DeserializeObject<IEnumerable<T>>(response);
             return result ?? [];
         }
+
     }
 }

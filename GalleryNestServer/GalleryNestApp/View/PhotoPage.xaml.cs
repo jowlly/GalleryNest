@@ -1,8 +1,10 @@
 ﻿using GalleryNestApp.Service;
 using GalleryNestApp.ViewModel;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Windows;
 using System.Windows.Controls;
+using Wpf.Ui.Controls;
 
 namespace GalleryNestApp
 {
@@ -69,5 +71,101 @@ namespace GalleryNestApp
             }
         }
 
+        private async void WebAlbumView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var webView = sender as WebView2CompositionControl;
+            if (webView == null || WebView2Provider == null) return;
+
+
+            try
+            {
+                var env = await WebView2Provider.GetEnvironmentAsync();
+                await webView.EnsureCoreWebView2Async(env);
+
+                if (_photoViewModel.LoadLastAlbumImageCommand?.CanExecute(webView) == true)
+                    _photoViewModel.LoadLastAlbumImageCommand.Execute(webView);
+            }
+            catch (Exception ex)
+            {
+                webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
+        }
+
+        private async void WebCategoryView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var webView = sender as WebView2CompositionControl;
+            if (webView == null || WebView2Provider == null) return;
+
+
+            try
+            {
+                var env = await WebView2Provider.GetEnvironmentAsync();
+                await webView.EnsureCoreWebView2Async(env);
+
+                if (_photoViewModel.LoadLastCategoryImageCommand?.CanExecute(webView) == true)
+                    _photoViewModel.LoadLastCategoryImageCommand.Execute(webView);
+            }
+            catch (Exception ex)
+            {
+                webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
+        }
+
+        private async void WebPersonView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var webView = sender as WebView2CompositionControl;
+            if (webView == null || WebView2Provider == null) return;
+
+
+            try
+            {
+                var env = await WebView2Provider.GetEnvironmentAsync();
+                await webView.EnsureCoreWebView2Async(env);
+
+                if (_photoViewModel.LoadLastPersonImageCommand?.CanExecute(webView) == true)
+                    _photoViewModel.LoadLastPersonImageCommand.Execute(webView);
+            }
+            catch (Exception ex)
+            {
+                webView.NavigateToString($"<html><body>Error: {ex.Message}</body></html>");
+            }
+        }
+
+        private void WebView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is WebView2CompositionControl webView)
+            {
+                try
+                {
+                    webView.CoreWebView2?.Stop();
+                    webView.Dispose();
+                }
+                catch { }
+            }
+        }
+
+        private void WebView_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        {
+            var webView = sender as WebView2CompositionControl;
+
+            if (!e.IsSuccess && webView != null)
+            {
+                webView.NavigateToString($"<html><body>Error: {e.WebErrorStatus}</body></html>");
+            }
+        }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Wpf.Ui.Controls.Button button)
+            {
+                var contextMenu = button.ContextMenu;
+                if (contextMenu != null)
+                {
+                    contextMenu.PlacementTarget = button;
+                    contextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                    contextMenu.IsOpen = true;
+                }
+            }
+        }
     }
 }

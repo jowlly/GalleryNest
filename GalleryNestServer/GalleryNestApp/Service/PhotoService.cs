@@ -1,6 +1,7 @@
 ﻿using Microsoft.Web.WebView2.Wpf;
 using Newtonsoft.Json;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -207,7 +208,7 @@ namespace GalleryNestApp.Service
             }
         }
         
-        public async Task UploadFile(string filePath, List<int> albumIds)
+        public async Task<int> UploadFile(string filePath, List<int> albumIds)
         {
             var fileInfo = new FileInfo(filePath);
             var creationTime = GetFileCreationTime(fileInfo);
@@ -245,6 +246,7 @@ namespace GalleryNestApp.Service
                 var error = await response.Content.ReadAsStringAsync();
                 throw new Exception($"Server error: {error}");
             }
+            return JsonConvert.DeserializeObject<int>(await response.Content.ReadAsStringAsync());
         }
 
         private DateTime GetFileCreationTime(FileInfo fileInfo)
@@ -333,9 +335,28 @@ namespace GalleryNestApp.Service
             return result;
         }
 
-        internal async Task GetFavouritePagedAsync(int currentPage, int pageSize)
+        public async Task<IEnumerable<Photo>> GetByIds(IEnumerable<int> ids)
         {
-            throw new NotImplementedException();
+            var uriBuilder = new UriBuilder($"{url}/photo/meta/list");
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+
+            foreach (var id in ids)
+            {
+                query.Add("photoIds", id.ToString());
+            }
+
+            uriBuilder.Query = query.ToString();
+
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = uriBuilder.Uri
+            };
+
+            
+            var response = await _httpClient.SendAsync(request);
+            var result = JsonConvert.DeserializeObject<IEnumerable<Photo>>(await response.Content.ReadAsStringAsync());
+            return result ?? [];
         }
     }
 }

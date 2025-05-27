@@ -58,7 +58,6 @@ namespace GalleryNestApp
                 ));
             // Регистрация ViewModel
             services.AddTransient<PhotoViewModel>();
-            services.AddTransient<FullScreenPhotoViewModel>();
             services.AddTransient<AlbumGalleryViewModel>();
             services.AddTransient<DeviceViewModel>();
             services.AddTransient<FavouriteViewModel>();
@@ -72,7 +71,6 @@ namespace GalleryNestApp
 
             // Регистрация страниц
             services.AddTransient<PhotoPage>();
-            services.AddTransient<FullScreenPhotoPage>();
             services.AddTransient<AlbumGalleryPage>();
             services.AddTransient<DevicePage>();
             services.AddTransient<FavouritesPage>();

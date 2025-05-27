@@ -51,6 +51,19 @@ namespace GalleryNestServer.Data
             }
         }
 
+        public IEnumerable<T> GetByIds(IEnumerable<int> ids)
+        {
+            try
+            {
+                return _collection.Find(entity => ids.Contains(entity.Id));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+        }
+
         public void Set(IEnumerable<T> photos)
         {
             lock (_dbLock)
