@@ -22,8 +22,7 @@ namespace GalleryNestApp.ViewModel
                 PersonId = albumId;
                 Task.Run(async () =>
                 {
-                    await LoadDataAsync(pageSize: 9);
-                    CurrentPage = 3;
+                    await LoadDataAsync();
                 });
 
             }
@@ -36,7 +35,7 @@ namespace GalleryNestApp.ViewModel
         private ObservableCollection<Photo> _photos = [];
         private ObservableCollection<int> _photoIds = [];
         private Photo? _selectedPhoto = null;
-        private const int PageSize = 3;
+        private const int PageSize = 9;
         private readonly INavigationService _navigationService;
         private int _currentPage = 1;
         private int _totalPages = 10;
@@ -107,11 +106,6 @@ namespace GalleryNestApp.ViewModel
         {
             _photoService = photoService;
             _navigationService = navigationService;
-            //Task.Run(async () =>
-            //{
-            //    await LoadDataAsync(pageSize: 9);
-            //    CurrentPage = 3;
-            //});
         }
 
         private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)

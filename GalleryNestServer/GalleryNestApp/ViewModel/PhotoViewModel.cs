@@ -35,7 +35,7 @@ namespace GalleryNestApp.ViewModel
         private ICollectionView _groupedPhotos;
 
         private Photo? _selectedPhoto = null;
-        private const int PageSize = 3;
+        private const int PageSize = 9;
         private readonly INavigationService _navigationService;
         private int _currentPage = 1;
         private int _totalPages = 10;
@@ -148,8 +148,7 @@ namespace GalleryNestApp.ViewModel
             PersonService = personService;
             _navigationService = navigationService;
             InitGroups();
-            LoadDataAsync(pageSize: 9);
-            CurrentPage = 3;
+            LoadDataAsync();
         }
 
         private void InitGroups()
@@ -198,12 +197,7 @@ namespace GalleryNestApp.ViewModel
 
         public ICommand LoadNextPageCommand => new RelayCommand(async _ =>
         {
-            if (CurrentPage > 1 && Photos.Count()==0)
-            {
-                LoadDataAsync(pageSize: 9);
-                CurrentPage = 3;
-            }
-            else if (CurrentPage < TotalPages && !IsLoading)
+            if (CurrentPage < TotalPages && !IsLoading)
             {
                 CurrentPage++;
                 LoadDataAsync();

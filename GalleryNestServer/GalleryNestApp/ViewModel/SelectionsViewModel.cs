@@ -21,7 +21,7 @@ namespace GalleryNestApp.ViewModel
         private readonly INavigationService _navigationService;
 
         public PhotoService PhotoService { get => _photoService; private set => _photoService = value; }
-        private const int PageSize = 3;
+        private const int PageSize = 9;
         private int _currentPage = 1;
         private int _totalPages = 10;
         private bool _isLoading = false;
@@ -103,8 +103,7 @@ namespace GalleryNestApp.ViewModel
             _navigationService = navigationService;
             Task.Run(async () =>
             {
-                await LoadDataAsync(pageSize: 9);
-                CurrentPage = 3;
+                await LoadDataAsync();
             });
         }
 

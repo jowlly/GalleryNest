@@ -206,6 +206,7 @@ namespace GalleryNestServer.Controllers
                     Path = uploadPath,
                     AlbumIds = albumIds.ToList(),
                     PersonIds = [],
+                    SelectionIds = [],
                     CreationTime = creationTime
                 }
             ]);
