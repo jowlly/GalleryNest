@@ -155,7 +155,7 @@ namespace GalleryNestApp.ViewModel
         public ICommand OpenPersonCommand => new RelayCommand<object>(param =>
         {
             if (param is Person)
-                _navigationService.NavigateTo<PersonGalleryPage>((param as Person)!.Guid);
+                _navigationService.NavigateTo<PersonGalleryPage>((param as Person)!);
         });
 
 

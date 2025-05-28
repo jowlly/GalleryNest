@@ -11,15 +11,15 @@ namespace GalleryNestApp.ViewModel
 {
     public class PersonGalleryViewModel : ObservableObject, IParameterReceiver
     {
-        private string _personId;
+        private Person _person;
 
-        public string PersonId { get => _personId; set => _personId = value; }
+        public Person Person { get => _person; set => _person = value; }
 
         public void ReceiveParameter(object parameter)
         {
-            if (parameter is string albumId)
+            if (parameter is Person person)
             {
-                PersonId = albumId;
+                Person = person;
                 Task.Run(async () =>
                 {
                     await LoadDataAsync();
@@ -117,7 +117,7 @@ namespace GalleryNestApp.ViewModel
             {
                 if (reset) CurrentPage = 1;
 
-                var pagedResult = await PhotoService.LoadPhotosForPerson(PersonId, CurrentPage, pageSize);
+                var pagedResult = await PhotoService.LoadPhotosForPerson(Person.Guid, CurrentPage, pageSize);
 
                 if (reset) PhotoIds.Clear();
                 foreach (var photo in from photo in pagedResult

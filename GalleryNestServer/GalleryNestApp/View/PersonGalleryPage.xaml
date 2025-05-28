@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:GalleryNestApp.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Title="PersonGalleryPage"
     d:DesignHeight="450"
@@ -12,11 +13,24 @@
     mc:Ignorable="d">
 
     <Grid>
-        <local:PhotoGalleryControl
-            DeleteCommand="{Binding DeletePhotoCommand}"
-            ItemClickCommand="{Binding PhotoClickCommand}"
-            ItemsSource="{Binding PhotoIds}"
-            LoadImageCommand="{Binding LoadImageCommand}"
-            WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <ui:TextBlock
+                Margin="10"
+                FontSize="24"
+                Foreground="White"
+                Text="{Binding Path=Person.Name}" />
+        </Grid>
+        <Grid Grid.Row="1">
+            <local:PhotoGalleryControl
+                DeleteCommand="{Binding DeletePhotoCommand}"
+                ItemClickCommand="{Binding PhotoClickCommand}"
+                ItemsSource="{Binding PhotoIds}"
+                LoadImageCommand="{Binding LoadImageCommand}"
+                WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
+        </Grid>
     </Grid>
 </Page>
