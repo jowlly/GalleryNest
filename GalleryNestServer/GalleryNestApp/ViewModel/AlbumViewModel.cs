@@ -3,6 +3,7 @@ using GalleryNestApp.View;
 using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using Wpf.Ui.Input;
@@ -14,6 +15,7 @@ namespace GalleryNestApp.ViewModel
     {
         #region Fields
         private AlbumService _albumService;
+        private ObservableCollection<Album> _selectedAlbums= [];
         private ObservableCollection<Album> _albums = [];
         private ObservableCollection<int> _photoIds = [];
         private string _albumName = string.Empty;
@@ -67,6 +69,15 @@ namespace GalleryNestApp.ViewModel
                 OnPropertyChanged(nameof(Albums));
             }
         }
+        public ObservableCollection<Album> SelectedAlbums
+        {
+            get => _selectedAlbums;
+            set
+            {
+                _selectedAlbums = value;
+                OnPropertyChanged(nameof(SelectedAlbums));
+            }
+        }
         public ObservableCollection<int> PhotoIds
         {
             get => _photoIds;
@@ -105,6 +116,24 @@ namespace GalleryNestApp.ViewModel
             LoadDataAsync();
         }
 
+        private void Album_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Album.IsSelected))
+            {
+                var album = (Album)sender;
+                if (album.IsSelected)
+                {
+                    if (!SelectedAlbums.Contains(album))
+                        SelectedAlbums.Add(album);
+                }
+                else
+                {
+                    if (SelectedAlbums.Contains(album))
+                        SelectedAlbums.Remove(album);
+                }
+            }
+        }
+
         private async Task LoadDataAsync(bool reset = false, int pageSize = PageSize)
         {
             if (IsLoading) return;
@@ -121,6 +150,7 @@ namespace GalleryNestApp.ViewModel
                                       where !Albums.Select(x => x.Id).ToList().Contains(album.Id)
                                       select album)
                 {
+                    album.PropertyChanged += Album_PropertyChanged;
                     Albums.Add(album);
                 }
             }
@@ -159,7 +189,19 @@ namespace GalleryNestApp.ViewModel
                 _navigationService.NavigateTo<AlbumGalleryPage>((param as Album)!);
         });
 
+        private RelayCommand? undoSelectionCommand = null;
+        public RelayCommand UndoSelectionCommand => undoSelectionCommand ??= new RelayCommand(async obj =>
+        {
+            var selectedCopy = SelectedAlbums.ToList();
 
+            foreach (var photo in selectedCopy)
+            {
+                photo.IsSelected = false;
+            }
+
+            SelectedAlbums.Clear();
+        }
+        );
         private RelayCommand? loadAlbumsCommand = null;
         public RelayCommand LoadAlbumsCommand => loadAlbumsCommand ??= new RelayCommand(async obj =>
         {
@@ -206,10 +248,14 @@ namespace GalleryNestApp.ViewModel
         private RelayCommand? deleteAlbumCommand = null;
         public RelayCommand DeleteAlbumCommand => deleteAlbumCommand ??= new RelayCommand(async obj =>
         {
-            await _albumService.DeleteAsync(
-                    [SelectedAlbum.Id]);
-
-            await LoadDataAsync();
+            var toDelete = SelectedAlbums.ToList();
+            await _albumService.DeleteAsync(toDelete.Select(x => x.Id).ToList());
+            foreach (var photo in toDelete)
+            {
+                if (SelectedAlbums.Contains(photo))
+                    SelectedAlbums.Remove(photo);
+            }
+            LoadDataAsync();
         }
         );
 

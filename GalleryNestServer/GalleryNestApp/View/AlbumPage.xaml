@@ -11,8 +11,50 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
+    <Page.Resources>
+        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+        <local:BindingProxy x:Key="Proxy" Data="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=Page}}" />
+    </Page.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border
+            Grid.Row="0"
+            Background="#2D2D2D"
+            Visibility="{Binding SelectedAlbums.Count, Converter={StaticResource CountToVisibilityConverter}}">
+            <StackPanel
+                Margin="10"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+
+                <ui:Button
+                    Margin="5,0"
+                    Command="{Binding UndoSelectionCommand}"
+                    Icon="{ui:SymbolIcon Symbol=Dismiss24}" />
+
+                <Border
+                    Margin="0,0,15,0"
+                    Padding="8,4"
+                    Background="#404040"
+                    CornerRadius="4">
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="{Binding SelectedAlbums.Count, StringFormat='Выбрано: {0}'}" />
+                </Border>
+
+                <ui:Button
+                    Margin="5,0"
+                    Command="{Binding DeleteAlbumCommand}"
+                    Content="Удалить"
+                    Icon="{ui:SymbolIcon Symbol=Delete24}" />
+
+            </StackPanel>
+        </Border>
         <local:PhotoGalleryControl
+            Grid.Row="1"
             DeleteCommand="{Binding DeleteAlbumCommand}"
             ItemClickCommand="{Binding OpenAlbumCommand}"
             ItemsSource="{Binding Albums}"
@@ -22,6 +64,7 @@
             ShowDeleteButton="True"
             WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
         <StackPanel
+            Grid.Row="1"
             Margin="20"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom">
