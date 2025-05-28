@@ -4,21 +4,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="Добавить альбом"
     Width="300"
+    Background="#272537"
     SizeToContent="Height"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <StackPanel Margin="10">
-        <TextBox x:Name="AlbumNameTextBox" Margin="0,0,0,10" />
-        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+        <ui:TextBox x:Name="AlbumNameTextBox" Margin="0,0,0,10" />
+        <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
             <Button
                 Width="80"
-                Margin="0,0,10,0"
+                Margin="0,0,50,0"
                 Click="CancelButton_Click"
                 Content="Отмена" />
             <Button
-                Width="80"
+                Width="150"
+                HorizontalAlignment="Right"
                 Click="AddButton_Click"
                 Content="Добавить" />
         </StackPanel>
