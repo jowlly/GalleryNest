@@ -27,12 +27,12 @@ namespace GalleryNestApp.View
         public static readonly DependencyProperty LoadImageCommandProperty =
             DependencyProperty.Register("LoadImageCommand", typeof(ICommand), typeof(PhotoGalleryControl));
 
-        public static readonly DependencyProperty SaveAlbumCommandProperty =
-           DependencyProperty.Register("SaveAlbumCommand", typeof(ICommand), typeof(PhotoGalleryControl));
-        public ICommand SaveAlbumCommand
+        public static readonly DependencyProperty SaveCommandProperty =
+           DependencyProperty.Register("SaveCommand", typeof(ICommand), typeof(PhotoGalleryControl));
+        public ICommand SaveCommand
         {
-            get => (ICommand)GetValue(SaveAlbumCommandProperty);
-            set => SetValue(SaveAlbumCommandProperty, value);
+            get => (ICommand)GetValue(SaveCommandProperty);
+            set => SetValue(SaveCommandProperty, value);
         }
 
 
@@ -506,8 +506,8 @@ namespace GalleryNestApp.View
 
         private void ConfirmButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SaveAlbumCommand?.CanExecute(sender as DependencyObject) == true)
-                SaveAlbumCommand.Execute((sender as System.Windows.Controls.Button).DataContext);
+            if (SaveCommand?.CanExecute(sender as DependencyObject) == true)
+                SaveCommand.Execute((sender as System.Windows.Controls.Button).DataContext);
             ExitEditMode(sender as DependencyObject);
         }
 

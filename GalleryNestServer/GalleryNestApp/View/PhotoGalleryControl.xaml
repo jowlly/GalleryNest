@@ -14,7 +14,8 @@
 
         <local:FavouriteToIconConverter x:Key="FavouriteToIconConverter" />
         <local:BindingProxy x:Key="Proxy" Data="{Binding RelativeSource={RelativeSource AncestorType=UserControl}}" />
-
+        <local:TrimTextConverter x:Key="TextTrimmer" />
+        
         <Style x:Key="CustomContextMenuStyle" TargetType="ContextMenu">
             <Setter Property="Background" Value="#2D2D2D" />
             <Setter Property="Foreground" Value="White" />
@@ -156,7 +157,7 @@
                                 FontSize="16"
                                 FontWeight="Bold"
                                 Foreground="White"
-                                Text="{Binding Name}" />
+                                Text="{Binding Name, Converter={StaticResource TextTrimmer}}" />
 
                             <ui:Button
                                 x:Name="EditButton"

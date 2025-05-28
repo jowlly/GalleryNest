@@ -166,6 +166,15 @@ namespace GalleryNestApp.ViewModel
         }
         );
 
+        private RelayCommand? savePersonCommand = null;
+        public RelayCommand SavePersonCommand => savePersonCommand ??= new RelayCommand(async obj =>
+        {
+            await _personService.EditAsync(
+                        [obj as Person]);
+
+            await LoadDataAsync();
+        }
+        );
 
         private RelayCommand? deletePersonCommand = null;
         public RelayCommand DeletePersonCommand => deletePersonCommand ??= new RelayCommand(async obj =>

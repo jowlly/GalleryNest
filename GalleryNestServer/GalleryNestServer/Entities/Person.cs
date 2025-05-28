@@ -3,11 +3,11 @@
     public class Person : IdentifiableEntity
     {
         public string Guid { get; set; }
-        private List<float[]> _embeddings = new List<float[]>();
-        public float[] AverageEmbedding { get; private set; }
+        private List<float[]>? _embeddings = new List<float[]>();
+        public float[]? AverageEmbedding { get; private set; }
         public string? Name { get; set; }
 
-        public IReadOnlyList<float[]> Embeddings => _embeddings.AsReadOnly();
+        public IReadOnlyList<float[]>? Embeddings => _embeddings.AsReadOnly();
 
         public void AddEmbedding(float[] embedding)
         {
