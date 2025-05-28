@@ -11,6 +11,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Wpf.Ui.Controls;
 using Button = Wpf.Ui.Controls.Button;
+using TextBlock = System.Windows.Controls.TextBlock;
+using TextBox = System.Windows.Controls.TextBox;
 
 namespace GalleryNestApp.View
 {
@@ -24,6 +26,15 @@ namespace GalleryNestApp.View
 
         public static readonly DependencyProperty LoadImageCommandProperty =
             DependencyProperty.Register("LoadImageCommand", typeof(ICommand), typeof(PhotoGalleryControl));
+
+        public static readonly DependencyProperty SaveAlbumCommandProperty =
+           DependencyProperty.Register("SaveAlbumCommand", typeof(ICommand), typeof(PhotoGalleryControl));
+        public ICommand SaveAlbumCommand
+        {
+            get => (ICommand)GetValue(SaveAlbumCommandProperty);
+            set => SetValue(SaveAlbumCommandProperty, value);
+        }
+
 
         public ICommand LoadImageCommand
         {
@@ -193,7 +204,6 @@ namespace GalleryNestApp.View
             get => (IEnumerable)GetValue(PeopleSourceProperty);
             set => SetValue(PeopleSourceProperty, value);
         }
-
         public ICommand DeleteCommand
         {
             get => (ICommand)GetValue(DeleteCommandProperty);
@@ -399,7 +409,6 @@ namespace GalleryNestApp.View
             var scrollViewer = (ScrollViewer)sender;
             var currentTime = DateTime.Now;
 
-            // Bounce-эффект при достижении границ
             if (e.VerticalOffset == 0 || e.VerticalOffset == scrollViewer.ScrollableHeight)
             {
                 var transform = new TranslateTransform();
@@ -469,5 +478,85 @@ namespace GalleryNestApp.View
         {
 
         }
+
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+                var stackPanel = FindVisualParent<StackPanel>(button);
+                if (stackPanel == null) return;
+                var textBlock = stackPanel.FindName("AlbumNameText") as TextBlock;
+                var editButton = stackPanel.FindName("EditButton") as Button;
+                var editPanel = stackPanel.FindName("EditPanel") as StackPanel;
+                var editTextBox = editPanel?.FindName("EditTextBox") as TextBox;
+
+                if (textBlock != null && editPanel != null && editTextBox != null)
+                {
+                    _originalName = textBlock.Text;
+
+                    textBlock.Visibility = Visibility.Collapsed;
+                    editButton.Visibility = Visibility.Collapsed;
+                    editPanel.Visibility = Visibility.Visible;
+
+                    editTextBox.Focus();
+                    editTextBox.SelectAll();
+                }
+            }
+        }
+
+        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SaveAlbumCommand?.CanExecute(sender as DependencyObject) == true)
+                SaveAlbumCommand.Execute((sender as System.Windows.Controls.Button).DataContext);
+            ExitEditMode(sender as DependencyObject);
+        }
+
+        private void EditTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ExitEditMode(sender as DependencyObject);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                CancelEdit(sender as DependencyObject);
+                e.Handled = true;
+            }
+        }
+
+        private void ExitEditMode(DependencyObject element)
+        {
+            var stackPanel = FindVisualParent<StackPanel>(element);
+            if (stackPanel == null) return;
+
+            var textBlock = stackPanel.FindName("AlbumNameText") as TextBlock;
+            var editButton = stackPanel.FindName("EditButton") as Button;
+            var editPanel = stackPanel.FindName("EditPanel") as StackPanel;
+
+            if (textBlock != null && editButton != null && editPanel != null)
+            {
+                textBlock.Visibility = Visibility.Visible;
+                editButton.Visibility = Visibility.Visible;
+                editPanel.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void CancelEdit(DependencyObject element)
+        {
+            var stackPanel = FindVisualParent<StackPanel>(element);
+            if (stackPanel == null) return;
+
+            var editPanel = stackPanel.FindName("EditPanel") as StackPanel;
+            var editTextBox = editPanel?.FindName("EditTextBox") as TextBox;
+
+            if (editTextBox != null)
+            {
+                editTextBox.Text = _originalName;
+            }
+
+            ExitEditMode(element);
+        }
+
+        private string _originalName;
     }
 }

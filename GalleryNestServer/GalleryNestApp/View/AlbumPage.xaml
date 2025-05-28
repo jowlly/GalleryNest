@@ -17,6 +17,7 @@
             ItemClickCommand="{Binding OpenAlbumCommand}"
             ItemsSource="{Binding Albums}"
             LoadImageCommand="{Binding LoadImageCommand}"
+            SaveAlbumCommand="{Binding SaveAlbumCommand}"
             ShowAlbumInfo="True"
             ShowDeleteButton="True"
             WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />

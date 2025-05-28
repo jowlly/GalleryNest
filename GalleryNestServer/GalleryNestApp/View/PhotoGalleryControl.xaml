@@ -147,12 +147,66 @@
                             x:Name="AlbumInfoPanel"
                             Grid.Row="1"
                             VerticalAlignment="Bottom"
+                            Orientation="Horizontal"
                             Visibility="Collapsed">
                             <TextBlock
+                                x:Name="AlbumNameText"
+                                Margin="10,5,5,5"
+                                VerticalAlignment="Center"
+                                FontSize="16"
                                 FontWeight="Bold"
                                 Foreground="White"
-                                Text="{Binding Name}"
-                                TextTrimming="CharacterEllipsis" />
+                                Text="{Binding Name}" />
+
+                            <ui:Button
+                                x:Name="EditButton"
+                                Width="20"
+                                Height="20"
+                                Margin="0,0,10,0"
+                                Padding="0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Click="EditButton_Click"
+                                Cursor="Hand"
+                                Icon="{ui:SymbolIcon Symbol=Pen24}"
+                                ToolTip="Переименовать альбом" />
+
+                            <StackPanel
+                                x:Name="EditPanel"
+                                Orientation="Horizontal"
+                                Visibility="Collapsed">
+                                <TextBox
+                                    x:Name="EditTextBox"
+                                    Width="200"
+                                    Margin="5,5,5,5"
+                                    Background="White"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Foreground="Black"
+                                    KeyDown="EditTextBox_KeyDown"
+                                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <Button
+                                    x:Name="ConfirmButton"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="0,0,10,0"
+                                    Padding="0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="ConfirmButton_Click"
+                                    Cursor="Hand"
+                                    ToolTip="Подтвердить изменения">
+                                    <Button.Content>
+                                        <Path
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                                            Fill="Green"
+                                            Stretch="Uniform" />
+                                    </Button.Content>
+                                </Button>
+                            </StackPanel>
 
                         </StackPanel>
                     </Grid>

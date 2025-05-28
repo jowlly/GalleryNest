@@ -4,6 +4,7 @@ using GalleryNestApp.ViewModel.Core;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using Wpf.Ui.Input;
 using Album = GalleryNestApp.Model.Album;
 
@@ -187,6 +188,16 @@ namespace GalleryNestApp.ViewModel
                             Id = 0,
                             Name = AlbumName
                         }]);
+
+            await LoadDataAsync();
+        }
+        );
+
+        private RelayCommand? saveAlbumCommand = null;
+        public RelayCommand SaveAlbumCommand => saveAlbumCommand ??= new RelayCommand(async obj =>
+        {
+            await _albumService.EditAsync(
+                        [obj as Album]);
 
             await LoadDataAsync();
         }
