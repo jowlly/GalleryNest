@@ -13,27 +13,40 @@
     mc:Ignorable="d">
 
     <Grid>
-        <local:PhotoGalleryControl
-            DeleteCommand="{Binding DeletePhotoCommand}"
-            ItemClickCommand="{Binding PhotoClickCommand}"
-            ItemsSource="{Binding PhotoIds}"
-            LoadImageCommand="{Binding LoadImageCommand}"
-            WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
-        <StackPanel
-            Margin="20"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom">
-            <ui:Button
-                Width="40"
-                Height="40"
-                Click="Upload_Click"
-                Icon="{ui:SymbolIcon Symbol=Add48}" />
-            <Rectangle Height="10" />
-            <ui:Button
-                Width="40"
-                Height="40"
-                Command="{Binding LoadPhotoCommand}"
-                Icon="{ui:SymbolIcon Symbol=ArrowClockwise32}" />
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <ui:TextBlock
+                Margin="10"
+                FontSize="24"
+                Foreground="White"
+                Text="{Binding Path=Album.Name}" />
+        </Grid>
+        <Grid Grid.Row="1">
+            <local:PhotoGalleryControl
+                DeleteCommand="{Binding DeletePhotoCommand}"
+                ItemClickCommand="{Binding PhotoClickCommand}"
+                ItemsSource="{Binding PhotoIds}"
+                LoadImageCommand="{Binding LoadImageCommand}"
+                WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
+            <StackPanel
+                Margin="20"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom">
+                <ui:Button
+                    Width="40"
+                    Height="40"
+                    Click="Upload_Click"
+                    Icon="{ui:SymbolIcon Symbol=Add48}" />
+                <Rectangle Height="10" />
+                <ui:Button
+                    Width="40"
+                    Height="40"
+                    Command="{Binding LoadPhotoCommand}"
+                    Icon="{ui:SymbolIcon Symbol=ArrowClockwise32}" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

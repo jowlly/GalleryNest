@@ -156,7 +156,7 @@ namespace GalleryNestApp.ViewModel
         public ICommand OpenAlbumCommand => new RelayCommand<object>(param =>
         {
             if (param is Album)
-                _navigationService.NavigateTo<AlbumGalleryPage>((param as Album)!.Id);
+                _navigationService.NavigateTo<AlbumGalleryPage>((param as Album)!);
         });
 
 

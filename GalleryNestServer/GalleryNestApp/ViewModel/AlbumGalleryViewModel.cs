@@ -11,15 +11,15 @@ namespace GalleryNestApp.ViewModel
 {
     public class AlbumGalleryViewModel : ObservableObject, IParameterReceiver
     {
-        private int _albumId;
+        private Album _album;
 
-        public int AlbumId { get => _albumId; set => _albumId = value; }
+        public Album Album { get => _album; set => _album = value; }
 
         public void ReceiveParameter(object parameter)
         {
-            if (parameter is int albumId)
+            if (parameter is Album album)
             {
-                AlbumId = albumId;
+                Album = album;
                 Task.Run(async () =>
                 {
                     await LoadDataAsync();
@@ -118,7 +118,7 @@ namespace GalleryNestApp.ViewModel
             {
                 if (reset) CurrentPage = 1;
 
-                var pagedResult = await PhotoService.LoadPhotosForAlbum(AlbumId, CurrentPage, pageSize);
+                var pagedResult = await PhotoService.LoadPhotosForAlbum(Album.Id, CurrentPage, pageSize);
 
                 if (reset) PhotoIds.Clear();
                 foreach (var photo in from photo in pagedResult
@@ -171,7 +171,7 @@ namespace GalleryNestApp.ViewModel
             await PhotoService.AddAsync(new Photo()
             {
                 Id = 0,
-                AlbumIds = [AlbumId],
+                AlbumIds = [Album.Id],
             });
 
             await LoadDataAsync();
@@ -214,7 +214,7 @@ namespace GalleryNestApp.ViewModel
         {
             foreach (var fileName in fileNames)
             {
-                await PhotoService.UploadFile(fileName, [AlbumId]);
+                await PhotoService.UploadFile(fileName, [Album.Id]);
             }
             await LoadDataAsync();
         }
