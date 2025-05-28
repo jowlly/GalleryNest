@@ -353,6 +353,19 @@ namespace GalleryNestApp.ViewModel
 
         }
         );
+        private RelayCommand? undoSelectionCommand = null;
+        public RelayCommand UndoSelectionCommand => undoSelectionCommand ??= new RelayCommand(async obj =>
+        {
+            var selectedCopy = SelectedPhotos.ToList();
+
+            foreach (var photo in selectedCopy)
+            {
+                photo.IsSelected = false;
+            }
+
+            SelectedPhotos.Clear();
+        }
+        );
         private RelayCommand? addToCategoryCommand = null;
         public RelayCommand AddToCategoryCommand => addToCategoryCommand ??= new RelayCommand(async obj =>
         {

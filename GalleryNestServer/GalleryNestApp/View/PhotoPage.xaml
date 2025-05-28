@@ -83,6 +83,11 @@
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
 
+                <ui:Button
+                    Margin="5,0"
+                    Command="{Binding UndoSelectionCommand}"
+                    Icon="{ui:SymbolIcon Symbol=Dismiss24}" />
+
                 <Border
                     Margin="0,0,15,0"
                     Padding="8,4"
