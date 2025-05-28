@@ -16,6 +16,7 @@
             ItemClickCommand="{Binding OpenPersonCommand}"
             ItemsSource="{Binding Persons}"
             LoadImageCommand="{Binding LoadImageCommand}"
+            SaveCommand="{Binding SavePersonCommand}"
             ShowAlbumInfo="True"
             ShowDeleteButton="False"
             WebView2EnvironmentProvider="{Binding WebView2Provider, RelativeSource={RelativeSource AncestorType=Page}}" />
