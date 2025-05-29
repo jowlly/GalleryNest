@@ -1,17 +1,19 @@
 package com.example.owlnest
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
@@ -22,17 +24,12 @@ fun SourceScreen(navController: NavController) {
     var serverAddress by remember { mutableStateOf("") }
 
     fun onAddServer(address: String) {
-        val serverExists = PhotoService.servers.any { it.address == address }
-        if (!serverExists) {
-            val newServer = Server(
-                id = System.currentTimeMillis().toString(),
-                address = address
-            )
-            PhotoService.addServer(newServer)
-            servers = PhotoService.servers
-        } else {
-            println("Сервер с таким адресом уже существует!")
-        }
+        val newServer = Server(
+            id = System.currentTimeMillis().toString(),
+            address = address
+        )
+        PhotoService.addServer(newServer)
+        servers = PhotoService.servers
     }
 
     fun onRemoveServer(server: Server) {
@@ -76,7 +73,6 @@ fun SourceScreen(navController: NavController) {
                             onAddServer(serverAddress) // Добавляем сервер
                         }
                     }
-
                 ) {
                     Text("Добавить")
                 }
@@ -106,12 +102,13 @@ fun SourceScreen(navController: NavController) {
     ) { padding ->
         LazyColumn(modifier = Modifier.padding(padding)
             .fillMaxSize()) {
-
             items(servers) { server ->
                 ServerItem(
                     server = server,
                     onDelete = { onRemoveServer(server) },
-                    onSetActive = { onSetActiveServer(server) }
+                    onSetActive = {
+                        onSetActiveServer(server)
+                    }
                 )
             }
         }
@@ -134,6 +131,13 @@ fun ServerItem(server: Server, onDelete: () -> Unit, onSetActive: () -> Unit) {
                 if (server.isActive) {
                     Text("Активный", color = Color.Green)
                 }
+                Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(if (server.isAvailable) Color.Green else Color.Red)
+
+                )
             }
             Row {
                 Button(onClick = onSetActive) {

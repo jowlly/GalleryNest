@@ -1,12 +1,10 @@
 package com.example.owlnest
 
 import android.Manifest
-import android.R.color
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,30 +14,38 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,12 +62,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
@@ -71,9 +75,22 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
-
+private data class MutableAlbum(
+    val id: Long,
+    val name: String,
+    var coverUri: Uri,
+    val images: MutableList<Uri>
+)
+data class Album(
+    val id: Long,
+    val name: String,
+    val images: List<Uri>,
+    val coverUri: Uri?,
+    val count: Int
+)
 class GalleryViewModel : ViewModel() {
     var images by mutableStateOf(emptyList<Uri>())
         private set
@@ -83,6 +100,7 @@ class GalleryViewModel : ViewModel() {
 
     var selectedImages by mutableStateOf(emptySet<Uri>())
         private set
+    var selectedAlbum by mutableStateOf<Album?>(null)
 
     fun toggleImageSelection(uri: Uri) {
         selectedImages = if (selectedImages.contains(uri)) {
@@ -90,6 +108,10 @@ class GalleryViewModel : ViewModel() {
         } else {
             selectedImages + uri
         }
+    }
+
+    fun clearSelection(){
+        selectedImages = selectedImages.minus(selectedImages)
     }
 
     suspend fun loadImages(context: Context) {
@@ -119,6 +141,71 @@ class GalleryViewModel : ViewModel() {
         }
     }
 
+    var albums by mutableStateOf(emptyList<Album>())
+        private set
+
+    suspend fun loadAlbums(context: Context) {
+        withContext(Dispatchers.IO) {
+            val albumsMap = mutableMapOf<Long, MutableAlbum>()
+
+            val projection = arrayOf(
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.BUCKET_ID,
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                MediaStore.Images.Media.DATA,
+                MediaStore.Images.Media.DATE_ADDED
+            )
+
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                null,
+                null,
+                "${MediaStore.Images.Media.DATE_ADDED} DESC"
+            )?.use { cursor ->
+                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                val bucketIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)
+                val bucketNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(idColumn)
+                    val bucketId = cursor.getLong(bucketIdColumn)
+                    val bucketName = cursor.getString(bucketNameColumn) ?: "Unknown"
+                    val uri = Uri.withAppendedPath(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        id.toString()
+                    )
+
+                    val album = albumsMap.getOrPut(bucketId) {
+                        MutableAlbum(
+                            id = bucketId,
+                            name = bucketName,
+                            coverUri = uri,
+                            images = mutableListOf()
+                        )
+                    }
+                    album.images.add(uri)
+                }
+            }
+
+            albums = albumsMap.values.map {
+                Album(
+                    id = it.id,
+                    name = it.name,
+                    coverUri = it.coverUri,
+                    images = it.images,
+                    count = it.images.size
+                )
+            }
+            isLoading = false
+        }
+    }
+
+    fun selectAlbum(album: Album?) {
+        selectedAlbum = album
+        selectedImages = emptySet()
+    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -132,23 +219,91 @@ fun GalleryScreen(navController:NavController, viewModel: GalleryViewModel = vie
     }
 
     val permissionState = rememberPermissionState(permission)
+    val lifecycleScope = rememberCoroutineScope()
 
     LaunchedEffect(permissionState.status) {
         if (permissionState.status.isGranted) {
             viewModel.loadImages(context)
+            viewModel.loadAlbums(context)
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+
+        var showServerDialog by remember { mutableStateOf(false) }
+
         when {
             permissionState.status.isGranted -> {
                 if (viewModel.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 } else {
-                    ImageGrid(images = viewModel.images,
-                        selectedImages = viewModel.selectedImages,
-                        onImageSelected = viewModel::toggleImageSelection,
-                        navController = navController)
+                    if (viewModel.selectedAlbum == null) {
+                        AlbumList(
+                            albums = viewModel.albums,
+                            onAlbumSelected = { viewModel.selectAlbum(it) }
+                        )
+                    } else {
+                        ImageGrid(
+                            images = viewModel.selectedAlbum!!.images,
+                            selectedImages = viewModel.selectedImages,
+                            onImageSelected = viewModel::toggleImageSelection,
+                            navController = navController,
+                            onBack = { viewModel.selectAlbum(null) }
+                        )
+                        if (showServerDialog) {
+                            val servers = PhotoService.servers
+                            AlertDialog(
+                                onDismissRequest = { showServerDialog = false },
+                                title = { Text("Выберите сервер") },
+                                text = {
+                                    Column {
+                                        if (servers.isEmpty()) {
+                                            Text("Нет доступных серверов. Добавьте сервер сначала.")
+                                        } else {
+                                            LazyColumn {
+                                                items(servers){
+                                                    server ->
+                                                        Button(
+                                                            onClick = {
+                                                                lifecycleScope.launch {
+                                                                    PhotoService.updateActiveServer(server)
+                                                                    val checked=PhotoService.checkServerAvailability(
+                                                                        listOf(server)
+                                                                    )
+                                                                    if(checked.all { it.isAvailable }){PhotoService.uploadImages(context,
+                                                                        viewModel.selectedImages.toList()
+                                                                    )
+                                                                        viewModel.clearSelection()
+                                                                    }
+
+                                                                    showServerDialog = false
+                                                                }
+                                                            },
+                                                            modifier = Modifier.fillMaxWidth()
+                                                        ) {
+                                                            Row {
+                                                                Text(server.address)
+                                                                if (server.isActive) {
+                                                                    Text(" (Активный)", color = Color.Green)
+                                                                }
+                                                            }
+
+                                                        }
+
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(onClick = { showServerDialog = false }) {
+                                        Text("Отмена")
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -163,9 +318,23 @@ fun GalleryScreen(navController:NavController, viewModel: GalleryViewModel = vie
                 Text("Requesting permission...", modifier = Modifier.align(Alignment.Center))
             }
         }
+        if (viewModel.selectedAlbum != null) {
+            IconButton(
+                onClick = { viewModel.selectAlbum(null) },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
+            }
+        }
         if (viewModel.selectedImages.isNotEmpty()) {
             FloatingActionButton(
-                onClick = { navController.navigate("source") },
+                onClick = { showServerDialog=true},
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
@@ -234,7 +403,8 @@ private fun ImageGrid(
     images: List<Uri>,
     selectedImages: Set<Uri>,
     onImageSelected: (Uri) -> Unit,
-    navController: NavController)
+    navController: NavController,
+    onBack: () -> Unit)
 {
     val context = LocalContext.current
     var zoom by remember{ mutableStateOf(1f) }
@@ -245,6 +415,7 @@ private fun ImageGrid(
     val minColumns = 1
     val itemSize = (screenWidth / columnCount) - 2.dp
 
+    Box {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columnCount),
         modifier = Modifier
@@ -332,6 +503,77 @@ private fun ImageGrid(
                     )
                 }
             }
+        }
+    }
+    }
+}
+@Composable
+private fun AlbumList(
+    albums: List<Album>,
+    onAlbumSelected: (Album) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize()
+    ) {
+        items(albums) { album ->
+            AlbumItem(
+                album = album,
+                onAlbumClick = { onAlbumSelected(album) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun AlbumItem(
+    album: Album,
+    onAlbumClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .padding(8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .combinedClickable(onClick = onAlbumClick)
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(album.coverUri)
+                .crossfade(true)
+                .size(Size.ORIGINAL)
+                .build(),
+            contentDescription = "Album cover",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)),
+                        startY = 0.5f
+                    )
+                )
+                .padding(8.dp)
+                .align(Alignment.BottomStart)
+        ) {
+            Text(
+                text = album.name,
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "${album.count} photos",
+                color = Color.White.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
