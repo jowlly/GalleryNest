@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -36,6 +37,7 @@ fun Navigator(navController: NavHostController){
 sealed class Screen(val route: String, val title: String) {
     object Gallery : Screen("gallery", "Gallery")
     object Server : Screen("server", "Server")
+    object Albums : Screen("albums", "Albums")
     object Source : Screen("source", "Source")
 }
 
@@ -65,6 +67,10 @@ fun NavHostContainer(
                 GalleryScreen(navController)
             }
 
+            composable("albums") {
+                GalleryScreen(navController)
+            }
+
             composable("source") {
                 SourceScreen(navController)
             }
@@ -81,7 +87,8 @@ fun BottomNavigationBar(navController: NavController) {
     NavigationBar(
 
         // set background color
-        containerColor = Color(0xFF0F9D58)) {
+        containerColor = Color(0xFF927CD6)
+    ) {
 
         // observe the backstack
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -119,7 +126,7 @@ fun BottomNavigationBar(navController: NavController) {
                     selectedIconColor = Color.White, // Icon color when selected
                     unselectedIconColor = Color.White, // Icon color when not selected
                     selectedTextColor = Color.White, // Label color when selected
-                    indicatorColor = Color(0xFF195334) // Highlight color for selected item
+                    indicatorColor = Color(0xFF6C52C9) // Highlight color for selected item
                 )
             )
         }
@@ -137,6 +144,11 @@ object Constants {
             route = Screen.Server.route,
             label = Screen.Server.title,
             icon = Icons.Default.Send
+        ),
+        BottomNavItem(
+            route = Screen.Albums.route,
+            label = Screen.Albums.title,
+            icon = Icons.Default.Star
         ),
         BottomNavItem(
             route = Screen.Source.route,

@@ -7,10 +7,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
@@ -21,12 +22,17 @@ fun SourceScreen(navController: NavController) {
     var serverAddress by remember { mutableStateOf("") }
 
     fun onAddServer(address: String) {
-        val newServer = Server(
-            id = System.currentTimeMillis().toString(),
-            address = address
-        )
-        PhotoService.addServer(newServer)
-        servers = PhotoService.servers
+        val serverExists = PhotoService.servers.any { it.address == address }
+        if (!serverExists) {
+            val newServer = Server(
+                id = System.currentTimeMillis().toString(),
+                address = address
+            )
+            PhotoService.addServer(newServer)
+            servers = PhotoService.servers
+        } else {
+            println("Сервер с таким адресом уже существует!")
+        }
     }
 
     fun onRemoveServer(server: Server) {
@@ -70,6 +76,7 @@ fun SourceScreen(navController: NavController) {
                             onAddServer(serverAddress) // Добавляем сервер
                         }
                     }
+
                 ) {
                     Text("Добавить")
                 }
@@ -99,6 +106,7 @@ fun SourceScreen(navController: NavController) {
     ) { padding ->
         LazyColumn(modifier = Modifier.padding(padding)
             .fillMaxSize()) {
+
             items(servers) { server ->
                 ServerItem(
                     server = server,
