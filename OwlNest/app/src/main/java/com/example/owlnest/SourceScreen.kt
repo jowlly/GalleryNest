@@ -122,9 +122,8 @@ fun ServerItem(server: Server, onDelete: () -> Unit, onSetActive: () -> Unit) {
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
             Column {
                 Text(server.address)

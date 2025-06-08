@@ -20,6 +20,9 @@ import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
@@ -122,7 +125,7 @@ object PhotoService {
         return "${activeServer?.address}/api/photo/download?photoId=$photoId"
     }
 
-    suspend fun checkServerAvailability(serverList: List<Server> = emptyList()) : List<Server> {
+    suspend fun checkServerAvailability(serverList: List<Server> = emptyList()): List<Server> {
         return coroutineScope {
             serverList.map { server ->
                 async {
@@ -146,6 +149,7 @@ object PhotoService {
             }.awaitAll()
         }
     }
+
     suspend fun fetchPhotos(): List<Photo> {
         val client = OkHttpClient()
         val request = Request.Builder()
@@ -164,9 +168,11 @@ object PhotoService {
                             albumIds.add(albumIdValue.getInt(i))
                         }
                     }
+
                     is Int -> {
                         albumIds.add(albumIdValue)
                     }
+
                     else -> {
                         try {
                             albumIds.add(albumIdValue.toString().toInt())
@@ -195,6 +201,12 @@ object PhotoService {
                         inputStream.readBytes()
                     }
 
+                    // Получаем дату создания фото из метаданных
+                    val dateTaken = getCreationDate(context, uri)
+                    val formattedDate = dateTaken?.let {
+                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
+                            .format(Date(it))
+                    }
                     val requestBody = MultipartBody.Builder()
                         .setType(MultipartBody.FORM)
                         .addFormDataPart(
@@ -202,6 +214,11 @@ object PhotoService {
                             "photo_${System.currentTimeMillis()}.jpg",
                             bytes.toRequestBody("image/jpeg".toMediaType())
                         )
+                        .apply {
+                            formattedDate?.let {
+                                addFormDataPart("creationTime", it)
+                            }
+                        }
                         .build()
 
                     val request = Request.Builder()
@@ -220,8 +237,32 @@ object PhotoService {
         }
     }
 
-}
+    private fun getCreationDate(context: Context, uri: Uri): Long? {
+        val projection = arrayOf(
+            MediaStore.Images.ImageColumns.DATE_TAKEN
+        )
 
+        return context.contentResolver.query(
+            uri,
+            projection,
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val dateIndex =
+                    cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATE_TAKEN)
+                if (!cursor.isNull(dateIndex)) {
+                    cursor.getLong(dateIndex)
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        }
+    }
+}
 data class Photo(val id: Int, val albumId: List<Int>, val path: String)
 
 data class Server(

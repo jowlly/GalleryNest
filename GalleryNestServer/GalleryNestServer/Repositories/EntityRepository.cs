@@ -35,7 +35,8 @@ namespace GalleryNestServer.Data
 
         public IEnumerable<T> GetAll()
         {
-            return _collection.FindAll();
+            return _collection.FindAll()
+                              .OrderByDescending(x => x.CreatedAt);
         }
 
         public T GetById(int id)

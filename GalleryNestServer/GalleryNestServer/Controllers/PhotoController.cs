@@ -52,12 +52,13 @@ namespace GalleryNestServer.Controllers
             return Ok(photo);
         }
         [HttpGet("meta")]
-        public ActionResult<IEnumerable<Photo>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public ActionResult<IEnumerable<Photo>> GetAll([FromQuery] int pageNumber = 0, [FromQuery] int pageSize = 0)
         {
-            if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1 || pageSize > 100) pageSize = 10;
-
-            var products = _photoRepository.GetPaged(pageNumber, pageSize);
+            var products = new List<Photo>();
+            if (pageNumber < 1 && (pageSize < 1 || pageSize > 100))
+                products = _photoRepository.GetAll().OrderByDescending(x=>x.CreationTime).ToList();
+            else
+                products = _photoRepository.GetPaged(pageNumber, pageSize);
             return Ok(products);
         }
 
